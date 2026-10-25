@@ -213,7 +213,7 @@ export default function Project({
           </>
         }
       />
-      <div className={`project-workspace ${glossaryOpen ? 'with-glossary' : ''}`}>
+      <div className="project-workspace">
         <Editor inputRef={inputRef} onFiles={importFiles} busy={busy}>
           {capture ? (
             <figure className="image-preview">

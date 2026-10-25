@@ -534,25 +534,28 @@ test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({
   await describeMark(page, '첫 지시');
   const button = page.getByRole('button', { name: '용어', exact: true });
   await button.click();
-  const narrow = page.viewportSize()!.width < 960;
-  if (narrow) {
-    await expect(page.locator('.glossary-overlay')).toBeVisible();
-    await page.getByRole('button', { name: '빈 화면 안내 Empty state', exact: true }).focus();
-    await page.keyboard.press('Tab');
-    await expect(page.getByRole('button', { name: '닫기', exact: true })).toBeFocused();
-    await page.keyboard.press('Escape');
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await expect(button).toBeFocused();
-    await button.click();
-    await page.mouse.click(2, 2);
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-    await button.click();
-  } else {
-    const panel = await page.getByRole('complementary', { name: '용어 패널' }).boundingBox();
-    const canvas = await page.getByRole('region', { name: '캡처 작업 공간' }).boundingBox();
-    expect(panel!.width).toBe(360);
-    expect(canvas!.x + canvas!.width).toBeLessThan(panel!.x);
-  }
+  const canvasBefore = await page.getByRole('region', { name: '캡처 작업 공간' }).boundingBox();
+  await expect(page.locator('.glossary-overlay')).toBeVisible();
+  await page.getByRole('button', { name: '빈 화면 안내 Empty state', exact: true }).focus();
+  await page.keyboard.press('Tab');
+  await expect(page.getByRole('button', { name: '닫기', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(button).toBeFocused();
+  await button.click();
+  await page.mouse.click(2, 2);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await button.click();
+  // 서랍이 열려도 프로젝트 화면 크기는 그대로
+  const canvasAfter = await page.getByRole('region', { name: '캡처 작업 공간' }).boundingBox();
+  expect(canvasAfter!.width).toBe(canvasBefore!.width);
+  // 밀려 나오는 움직임이 끝나면 서랍 오른쪽 끝이 화면 오른쪽 끝에 붙는다
+  await expect
+    .poll(async () => {
+      const drawer = await page.locator('.glossary-overlay').boundingBox();
+      return Math.round(drawer!.x + drawer!.width);
+    })
+    .toBe(page.viewportSize()!.width);
   await expectNoOverflow(page);
   await page.getByRole('button', { name: '카드 Card', exact: true }).click();
   await page.getByRole('button', { name: '1번 지시에 넣기' }).focus();
@@ -563,8 +566,7 @@ test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({
   await page.getByRole('button', { name: '1번 지시에 넣기' }).click();
   await expect(page.getByRole('status')).toHaveText('1번 지시에 넣었어요');
   await page.keyboard.press('Escape');
-  if (narrow) await page.keyboard.press('Escape');
-  else await button.click();
+  await page.keyboard.press('Escape');
   await expect(page.locator('.annotation-list button')).toContainText(
     '첫 지시\n사진과 제목을 둥근 카드(Card) 하나에 모아 주세요.',
   );
