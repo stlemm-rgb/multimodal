@@ -13,7 +13,8 @@
   | 설정 | `#/settings` | AI 연결(기본 꺼짐, Claude/ChatGPT, 키는 이 기기 localStorage, 연결 시험) |
 - 저장: IndexedDB(`src/platform/idbStore.ts`, 형식 버전 1). 새로고침해도 유지.
 - AI 다듬기: 메모 + 지금 캡처 1장 → 확인 시트 → 전송 → 결과 복사. **실제 API 키로는 아직 안 해 봄.**
-- **오픈소스(GPL-3.0)로 공개 준비 완료**: README·LICENSE·`.github/workflows/deploy.yml`(main push → `npm run check` → GitHub Pages). AI 작업 문서는 git 밖(이 PC에만). 원격 저장소는 아직 없음.
+- **오픈소스(GPL-3.0)로 공개 준비 완료**: README·LICENSE·`.github/workflows/deploy.yml`(main push → `npm run check` → GitHub Pages). AI 작업 문서는 git 밖(이 PC에만).
+- **공개 중**: 저장소 https://github.com/stlemm-rgb/multimodal · 웹 https://stlemm-rgb.github.io/multimodal/ (main push → 검사 → 자동 배포)
 
 ## 폴더 (일 나누는 단위)
 | 폴더 | 내용 | 기본 담당 |
@@ -32,5 +33,7 @@
 5. 안드로이드: Capacitor 감싸기 (웹 첫 버전 뒤)
 
 ## 사용자가 할 일
-- GitHub에 빈 공개 저장소 `multimodal` 만들기 → 총괄이 push → 저장소 Settings → Pages → Source를 "GitHub Actions"로
 - AI 작업 문서 백업 방법 정하기 (git 밖이라 이 PC가 망가지면 사라짐)
+
+## 작은 정리 거리
+- workflow 경고: actions 버전(Node 20 낡음), ubuntu-latest → Ubuntu 26 이동
