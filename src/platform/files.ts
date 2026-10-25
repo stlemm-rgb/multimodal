@@ -3,6 +3,16 @@ export const acceptedImages = 'image/png,image/jpeg,image/gif,image/webp';
 export function chooseFiles(input: HTMLInputElement | null) {
   input?.click();
 }
+export function saveBlob(blob: Blob, name: string) {
+  const url = createImageUrl(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = name;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => releaseImageUrl(url), 1000);
+}
 export function listenForImagePaste(onFiles: (files: File[]) => void) {
   const listener = (event: ClipboardEvent) => {
     if (document.querySelector('dialog[open]')) return;

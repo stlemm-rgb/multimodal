@@ -8,21 +8,24 @@ interface AnnotationBase {
   id: string;
 }
 
-export interface PinAnnotation extends AnnotationBase {
-  type: 'pin';
-  position: Point;
+interface Numbered {
   number: number;
   instruction: string;
 }
 
-export interface BoxAnnotation extends AnnotationBase {
+export interface PinAnnotation extends AnnotationBase, Numbered {
+  type: 'pin';
+  position: Point;
+}
+
+export interface BoxAnnotation extends AnnotationBase, Numbered {
   type: 'box';
   position: Point;
   width: number;
   height: number;
 }
 
-export interface ArrowAnnotation extends AnnotationBase {
+export interface ArrowAnnotation extends AnnotationBase, Numbered {
   type: 'arrow';
   start: Point;
   end: Point;

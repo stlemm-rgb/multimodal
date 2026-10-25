@@ -1,4 +1,5 @@
 import type { Capture, Project } from './project';
+import { normalizeAnnotations } from './annotations';
 
 export const STORE_VERSION = 1;
 export interface ProjectStore {
@@ -42,7 +43,7 @@ export function createMemoryStore(): ProjectStore {
     },
     async getCapture(id) {
       const value = captures.get(id);
-      return value && copy(value);
+      return value && { ...copy(value), annotations: normalizeAnnotations(value.annotations) };
     },
     async saveCapture(capture) {
       captures.set(capture.id, copy(capture));

@@ -236,21 +236,201 @@ test('시트는 포커스를 가두고 Esc·닫기·바깥 누르기로 닫힌�
   await newProject(page);
   const exportButton = page.getByRole('button', { name: '내보내기', exact: true });
   await exportButton.click();
-  await page.getByRole('button', { name: '지시문 복사', exact: true }).focus();
+  await page.getByRole('button', { name: '프로젝트 전체 지시문 복사', exact: true }).focus();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: '닫기', exact: true })).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect(page.getByRole('button', { name: '지시문 복사', exact: true })).toBeFocused();
-  await page.getByRole('button', { name: '지시문 복사', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('아직 번호별 지시문이 없어요.');
+  await expect(
+    page.getByRole('button', { name: '프로젝트 전체 지시문 복사', exact: true }),
+  ).toBeFocused();
+  await expect(page.getByRole('button', { name: '이 화면 PNG 저장', exact: true })).toBeDisabled();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(exportButton).toBeFocused();
-  await page.getByRole('button', { name: '번호', exact: true }).click();
+  await page.getByRole('button', { name: '움직임', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('준비 중이에요.');
   await page.getByRole('button', { name: '닫기', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await exportButton.click();
   await page.mouse.click(4, 4);
   await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+async function addDrawingImage(page: Page) {
+  const base64 = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 600;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#eeeeee';
+    ctx.fillRect(0, 0, 800, 600);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.getByLabel('이미지 파일 고르기', { exact: true }).setInputFiles({
+    name: '그릴 화면.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(base64, 'base64'),
+  });
+  await expect(page.getByRole('img', { name: '불러온 화면', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '캡처 추가', exact: true })).toBeEnabled();
+}
+
+async function draw(page: Page, tool: string, start: [number, number], end?: [number, number]) {
+  await page.getByRole('button', { name: tool, exact: true }).click();
+  const svg = page.getByLabel('표시 그리기', { exact: true });
+  await svg.scrollIntoViewIfNeeded();
+  const bounds = (await svg.boundingBox())!;
+  await page.mouse.move(bounds.x + bounds.width * start[0], bounds.y + bounds.height * start[1]);
+  await page.mouse.down();
+  if (end)
+    await page.mouse.move(bounds.x + bounds.width * end[0], bounds.y + bounds.height * end[1], {
+      steps: 8,
+    });
+  await page.mouse.up();
+}
+async function describeMark(page: Page, text: string) {
+  await expect(page.getByLabel('지시문', { exact: true })).toBeFocused();
+  await page.getByLabel('지시문', { exact: true }).fill(text);
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+}
+
+test('표시 추가·이동·실행 취소·저장 유지와 PNG·지시문 내보내기', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await newProject(page);
+  await addDrawingImage(page);
+  await draw(page, '번호', [0.2, 0.2]);
+  await describeMark(page, '버튼을 더 크게');
+  await draw(page, '박스', [0.45, 0.3], [0.75, 0.55]);
+  await describeMark(page, '파란색으로');
+  await draw(page, '화살표', [0.3, 0.7], [0.75, 0.8]);
+  await describeMark(page, '오른쪽으로 이동');
+  const marks = page.locator('[data-annotation-id]');
+  await expect(marks).toHaveCount(3);
+  // 새 도형과 첫 설명을 한 번에 되돌린다.
+  await page.getByRole('button', { name: '↶ 되돌리기', exact: true }).click();
+  await expect(page.locator('[data-annotation-type="arrow"]')).toHaveCount(0);
+  await page.getByRole('button', { name: '↷ 다시', exact: true }).click();
+  await expect(marks).toHaveCount(3);
+  await draw(page, '선택', [0.2, 0.2], [0.3, 0.25]);
+  const pinCircle = page.locator('[data-annotation-type="pin"] circle');
+  await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(240, 2);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.reload();
+  await expect(marks).toHaveCount(3);
+  await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(240, 2);
+  await expect(page.getByRole('button', { name: '↶ 되돌리기', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: '내보내기', exact: true }).click();
+  await page.getByRole('button', { name: '이 화면 지시문 복사', exact: true }).click();
+  const intro =
+    '첨부한 이미지의 빨간 번호를 보고 아래대로 고쳐 주세요. 이미지는 화면 번호 순서대로 붙였어요.';
+  await expect
+    .poll(() =>
+      page.evaluate(async () => (await navigator.clipboard.readText()).replace(/\r\n/g, '\n')),
+    )
+    .toBe(
+      `${intro}\n\n[화면 1]\n1. [점] 버튼을 더 크게\n2. [네모 영역] 파란색으로\n3. [화살표] 오른쪽으로 이동`,
+    );
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: '이 화면 PNG 저장', exact: true }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe('새 프로젝트_화면1.png');
+  const stream = (await download.createReadStream())!;
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const bytes = Buffer.concat(chunks);
+  expect([...bytes.subarray(0, 8)]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+  // 원본 크기와 실제 빨간 표시가 PNG에 포함되는지도 확인한다.
+  const exported = await page.evaluate(async (base64) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${base64}`;
+    await image.decode();
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    const ctx = canvas.getContext('2d')!;
+    ctx.drawImage(image, 0, 0);
+    return {
+      width: image.width,
+      height: image.height,
+      pixel: [...ctx.getImageData(230, 150, 1, 1).data],
+    };
+  }, bytes.toString('base64'));
+  expect(exported).toEqual({ width: 800, height: 600, pixel: [255, 45, 85, 255] });
+  await page.getByRole('button', { name: '이 화면 PNG 복사', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText('복사했어요');
+  await expect
+    .poll(() =>
+      page.evaluate(async () => (await navigator.clipboard.read()).flatMap((item) => item.types)),
+    )
+    .toContain('image/png');
+  await page.evaluate(() =>
+    Object.defineProperty(navigator.clipboard, 'write', { value: undefined, configurable: true }),
+  );
+  await page.getByRole('button', { name: '이 화면 PNG 복사', exact: true }).click();
+  await expect(page.getByRole('status')).toHaveText(
+    '이 브라우저는 그림 복사를 못 해요. PNG 저장을 써 주세요.',
+  );
+  await expectNoOverflow(page);
+});
+
+test('터치로 그리고 취소한 그리기는 버리며 입력 중인 글도 저장한다', async ({ page, context }) => {
+  await newProject(page);
+  await addDrawingImage(page);
+  await page.getByRole('button', { name: '박스', exact: true }).click();
+  const svg = page.getByLabel('표시 그리기', { exact: true });
+  await svg.scrollIntoViewIfNeeded();
+  const bounds = (await svg.boundingBox())!;
+  const client = await context.newCDPSession(page);
+  const start = { x: bounds.x + bounds.width * 0.3, y: bounds.y + bounds.height * 0.3 };
+  const end = { x: bounds.x + bounds.width * 0.7, y: bounds.y + bounds.height * 0.7 };
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [end] });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchCancel', touchPoints: [] });
+  await expect(page.locator('[data-annotation-id]')).toHaveCount(0);
+  await client.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [start] });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [end] });
+  await client.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await page.getByLabel('지시문', { exact: true }).fill('입력 중에도 저장');
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('[data-annotation-id]')).toHaveCount(1);
+  await page.getByLabel('지시문', { exact: true }).fill('입력 중에도 저장');
+  await page.reload();
+  await expect(page.getByRole('button', { name: '① 입력 중에도 저장', exact: true })).toBeVisible();
+  await expectNoOverflow(page);
+});
+
+test('메모·지우기·빈 지시 안내·캡처 전환과 단축키', async ({ page }) => {
+  await newProject(page);
+  await addDrawingImage(page);
+  await draw(page, '번호', [0.2, 0.2]);
+  await describeMark(page, '첫 지시');
+  await draw(page, '박스', [0.75, 0.55], [0.45, 0.3]);
+  await page.getByRole('button', { name: '닫기', exact: true }).click();
+  await draw(page, '메모', [0.1, 0.8]);
+  await page.getByLabel('메모 글', { exact: true }).fill('참고\n두 번째 줄');
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await expect(page.locator('[data-annotation-type="note"] text')).toHaveText([
+    '참고',
+    '두 번째 줄',
+  ]);
+  await page.getByRole('button', { name: '내보내기', exact: true }).click();
+  await expect(page.getByText('2번에 설명이 없어요', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: '닫기', exact: true }).click();
+  await page.getByRole('button', { name: '① 첫 지시', exact: true }).click();
+  await page.getByRole('button', { name: '지우기', exact: true }).click();
+  await expect(page.locator('[data-annotation-type="pin"]')).toHaveCount(0);
+  await expect(page.locator('[data-annotation-type="box"] text')).toHaveText('1');
+  await page.keyboard.press('Control+z');
+  await expect(page.locator('[data-annotation-type="pin"]')).toHaveCount(1);
+  await page.keyboard.press('Control+Shift+z');
+  await expect(page.locator('[data-annotation-type="pin"]')).toHaveCount(0);
+  await page.keyboard.press('Control+z');
+  await page.keyboard.press('Control+y');
+  await expect(page.locator('[data-annotation-type="pin"]')).toHaveCount(0);
+  await addDrawingImage(page);
+  await expect(page.locator('[data-annotation-id]')).toHaveCount(0);
+  await page.getByRole('button', { name: '캡처 1 보기' }).click();
+  await expect(page.locator('[data-annotation-id]')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: '↶ 되돌리기', exact: true })).toBeDisabled();
+  await expectNoOverflow(page);
 });

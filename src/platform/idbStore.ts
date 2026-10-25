@@ -1,5 +1,6 @@
 import { STORE_VERSION, type ProjectStore } from '../core/storage';
 import type { Capture, Project } from '../core/project';
+import { normalizeAnnotations } from '../core/annotations';
 
 const tables = ['projects', 'captures', 'images'];
 export function createIdbStore(): ProjectStore {
@@ -88,7 +89,10 @@ export function createIdbStore(): ProjectStore {
           cursor.continue();
         };
       }),
-    getCapture: (id) => read<Capture | undefined>('captures', id),
+    getCapture: async (id) => {
+      const capture = await read<Capture | undefined>('captures', id);
+      return capture && { ...capture, annotations: normalizeAnnotations(capture.annotations) };
+    },
     saveCapture: (capture) =>
       write((tx) => {
         tx.objectStore('captures').put(capture);
