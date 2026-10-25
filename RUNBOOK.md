@@ -1,7 +1,6 @@
 # RUNBOOK — 절차서
 
 > 설치·실행·검사 명령. 같은 실수를 두 번 하면 여기에 적는다.
-> ⚠️ 프로젝트 뼈대가 아직 없다. 아래 "실행·검사"는 Codex가 환경을 구성하면서 실제 명령으로 채운다 (HANDOFF.md "다음 할 일").
 
 ## 새 PC 준비
 1. Git 설치 후 처음 한 번:
@@ -32,13 +31,25 @@ git push                      # 원격 연결 후
 | pull 때 `Your local changes ... would be overwritten` | 이 PC에 커밋 안 한 변경이 있음 | 살리려면 커밋한 뒤 `git pull`. 버려도 되는지는 AI에게 먼저 물어보기 |
 | `CONFLICT` (충돌) | 두 PC에서 같은 파일을 따로 고침 | **더 진행하지 말고** 화면을 AI에게 보여 주기 |
 
-## 실행·검사 (Codex가 채울 것)
+## 실행·검사
 | 명령 | 하는 일 |
 | --- | --- |
-| `npm install` | 의존성 설치 |
-| `npm run dev` | 개발 서버 (주소: 채울 것) |
-| `npm run build` | 배포용 빌드 |
-| `npm run check` | **전체 검사 (커밋 전 필수)**: 타입 검사 + 린트 + 단위 시험 + 빌드 (+ 화면 검사) |
+| `npm install` | 의존성 설치 (Node.js 22 이상, 최초 한 번) |
+| `npm run dev` | 개발 서버: http://127.0.0.1:5173 (Ctrl+C로 종료) |
+| `npm run typecheck` | TypeScript 타입 검사 |
+| `npm run lint` | 코드 규칙 검사 (경고도 실패로 처리) |
+| `npm run format` | 작성한 앱·시험·설정 파일의 서식 정리 |
+| `npm run test` | 지시문 생성 로직 단위 시험 (Vitest) |
+| `npm run build` | 타입 검사 후 `dist/`에 배포용 파일 만들기 |
+| `npm run e2e` | 빌드된 화면 자동 검사 (먼저 `npm run build` 실행) |
+| `npm run check` | **전체 검사 (커밋 전 필수)**: 타입 검사 → 린트 → 단위 시험 → 빌드 → 화면 검사. 하나라도 실패하면 즉시 중단하고 실패 종료 코드를 반환 |
+
+- 개발 화면: 편집기 http://127.0.0.1:5173/#/ · 용어 사전 http://127.0.0.1:5173/#/glossary
+- 화면 검사는 PC에 설치된 **Google Chrome**을 쓴다. Playwright용 브라우저를 따로 내려받는 명령은 필요 없다.
+- 화면 검사 때 `vite preview`가 http://127.0.0.1:4173 에서 자동으로 시작·종료된다. 이 포트는 비워 둔다.
+- 화면 크기 390×844와 1280×800에서 메뉴 이동·콘솔 오류·가로 넘침·이미지 불러오기를 확인한다.
+- 첫 설치·전체 검사·실제 화면 확인은 Claude가 수행한다. Codex 환경 구성 단계에서는 설치와 검사를 실행하지 않았다.
+- PowerShell에서는 `npm run check` 바로 다음에 `$LASTEXITCODE`를 확인한다. `0`이어야 통과다.
 
 ## 배포
 (정적 호스팅 설정 후 적기)
