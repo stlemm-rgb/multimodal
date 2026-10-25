@@ -5,14 +5,15 @@
 ## 새 PC 준비
 1. Git 설치 후 처음 한 번:
    ```powershell
-   git config --global user.name "stlemm"
-   git config --global user.email "stlemm@gmail.com"
    git config --global core.autocrlf true
    ```
-2. 필요한 것: **Node.js 22 이상** (`node --version`), Chrome(자동 화면 검사용)
-3. 저장소 받기 → `npm install` → 전체 검사 통과 확인
-4. HANDOFF.md부터 읽고 이어서 작업
-5. PC를 옮길 때는 끝낸 PC에서 커밋·push, 새 PC에서 `git pull` 먼저. 한 번에 한 PC에서만
+   저장소를 받은 뒤, 공개 저장소라 이메일은 **GitHub 비공개 주소**로 (저장소 안에서만):
+   `git config user.email "<GitHub 숫자 ID>+<아이디>@users.noreply.github.com"` — 주소는 GitHub 설정 → Emails에서 확인
+2. **AI 작업 문서**(CLAUDE.md·AGENTS.md·`.claude/`·`refs/`)는 git에 올라가지 않는다. 새 PC로 옮길 때는 따로 복사한다.
+3. 필요한 것: **Node.js 22 이상** (`node --version`), Chrome(자동 화면 검사용)
+4. 저장소 받기 → `npm install` → 전체 검사 통과 확인
+5. HANDOFF.md부터 읽고 이어서 작업
+6. PC를 옮길 때는 끝낸 PC에서 커밋·push, 새 PC에서 `git pull` 먼저. 한 번에 한 PC에서만
 
 ## 커밋 순서 (매번)
 ```bash

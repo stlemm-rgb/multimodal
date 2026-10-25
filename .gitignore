@@ -7,3 +7,9 @@ test-results/
 .claude/settings.local.json
 .claude/worktrees/
 *.tsbuildinfo
+
+# AI 작업 문서: 이 PC에만 둔다 (공개 저장소에 올리지 않음)
+CLAUDE.md
+AGENTS.md
+.claude/
+refs/

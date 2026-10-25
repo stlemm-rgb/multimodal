@@ -1,7 +1,9 @@
 {
   "name": "multimodal",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "license": "GPL-3.0-only",
+  "description": "비개발자가 화면 캡처에 표시를 얹어 AI에게 지시하기 쉽게 돕는 도구",
   "type": "module",
   "engines": {
     "node": ">=22"
