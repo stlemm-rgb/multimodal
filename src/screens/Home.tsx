@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { createProject, renameProject, type Project } from '../core/project';
+import { useRef, useState } from 'react';
+import { createProject, renameProject, toggleCheck, type Project } from '../core/project';
 import { projectProgress } from '../core/stages';
 import type { ProjectStore } from '../core/storage';
 import BottomSheet from '../ui/BottomSheet';
@@ -14,6 +14,21 @@ interface Props {
   onDeleted: (id: string) => void;
 }
 export default function Home({ store, projects, onSaved, onDeleted }: Props) {
+  const saveQueue = useRef(Promise.resolve());
+  const latest = useRef(new Map<string, Project>());
+  function check(project: Project, itemId: string) {
+    const updated = toggleCheck(
+      latest.current.get(project.id) ?? project,
+      itemId,
+      new Date().toISOString(),
+    );
+    latest.current.set(project.id, updated);
+    onSaved(updated);
+    setError('');
+    saveQueue.current = saveQueue.current
+      .then(() => store.saveProject(updated))
+      .catch(() => setError('체크 내용을 저장하지 못했어요. 다시 시도해 주세요.'));
+  }
   const [selected, setSelected] = useState<Project | null>(null);
   const [mode, setMode] = useState<'menu' | 'rename' | 'delete'>('menu');
   const [name, setName] = useState('');
@@ -38,12 +53,15 @@ export default function Home({ store, projects, onSaved, onDeleted }: Props) {
     setBusy(true);
     setError('');
     try {
+      await saveQueue.current;
       if (mode === 'delete') {
         await store.deleteProject(selected.id);
+        latest.current.delete(selected.id);
         onDeleted(selected.id);
       } else {
         const updated = renameProject(selected, name, new Date().toISOString());
         await store.saveProject(updated);
+        latest.current.set(updated.id, updated);
         onSaved(updated);
       }
       setSelected(null);
@@ -116,8 +134,35 @@ export default function Home({ store, projects, onSaved, onDeleted }: Props) {
                   <ProgressBar
                     value={progress.completedStages}
                     total={progress.totalStages}
-                    label={`${progress.completedStages}/${progress.totalStages} 단계`}
+                    label={`${progress.completedStages}/${progress.totalStages} 단계 · ${progress.completedItems}/${progress.totalItems} 항목 완료`}
                   />
+                  <h4>
+                    {progress.currentStage
+                      ? `지금 단계: ${progress.currentIndex + 1}. ${progress.currentStage.title}`
+                      : '모든 단계를 마쳤어요!'}
+                  </h4>
+                  {progress.currentStage &&
+                    [
+                      ...progress.currentStage.items,
+                      ...(project.customItems[progress.currentStage.id] ?? []),
+                    ]
+                      .filter((item) => !project.checks[item.id])
+                      .slice(0, 2)
+                      .map((item) => (
+                        <div className="check-row" key={item.id}>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={false}
+                              onChange={() => check(project, item.id)}
+                            />
+                            <span>{item.text}</span>
+                          </label>
+                        </div>
+                      ))}
+                  <a className="button" href={`#/p/${project.id}/guide`}>
+                    전체 단계 보기
+                  </a>
                   <time dateTime={project.updatedAt}>
                     {new Date(project.updatedAt).toLocaleDateString('ko-KR')} 수정
                   </time>

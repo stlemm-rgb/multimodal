@@ -1,0 +1,28 @@
+import type { ComponentType } from 'react';
+import * as P from './PhonePreviews';
+export const previews: Record<string, ComponentType> = {
+  'split-layout': P.SplitLayout,
+  card: P.Card,
+  chip: P.Chip,
+  badge: P.Badge,
+  'tab-bar': P.TabBar,
+  'app-bar': P.AppBar,
+  list: P.List,
+  grid: P.Grid,
+  avatar: P.Avatar,
+  divider: P.Divider,
+  fab: P.Fab,
+  'empty-state': P.EmptyState,
+  drawer: P.Drawer,
+  'bottom-sheet': P.BottomSheetPreview,
+  modal: P.Modal,
+  toast: P.ToastPreview,
+  skeleton: P.Skeleton,
+  carousel: P.Carousel,
+  accordion: P.Accordion,
+  dropdown: P.Dropdown,
+  tooltip: P.Tooltip,
+  'pull-to-refresh': P.PullToRefresh,
+  'swipe-action': P.SwipeAction,
+  spinner: P.Spinner,
+};

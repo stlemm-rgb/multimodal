@@ -61,7 +61,7 @@ test('새 프로젝트의 캡처와 홈 썸네일은 새로고침 뒤에도 남�
   await expect(page.getByRole('img', { name: '새 프로젝트 첫 캡처' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('img', { name: '새 프로젝트 첫 캡처' })).toBeVisible();
-  await expect(page.getByText('0/7 단계', { exact: true })).toBeVisible();
+  await expect(page.getByText('0/7 단계 · 0/21 항목 완료', { exact: true })).toBeVisible();
   await expectNoOverflow(page);
   await page.getByRole('link', { name: '새 프로젝트 열기' }).click();
   await expect(page).toHaveURL(projectUrl);
@@ -209,8 +209,11 @@ test('AI는 기본 꺼짐이고 시트·설정·용어 사전을 외부 요청 �
   await expect(page.getByRole('switch', { name: 'AI 연결 켜기' })).not.toBeChecked();
   await page.getByRole('link', { name: '용어 사전', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'UI 용어 사전', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '스켈레톤', exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '바텀시트', exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: '움직임이 있는 용어 (12)' }).click();
+  await expect(page.getByRole('button', { name: '스켈레톤 Skeleton', exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: '바텀시트 Bottom sheet', exact: true }),
+  ).toBeVisible();
   await expectNoOverflow(page);
 });
 
@@ -432,5 +435,140 @@ test('메모·지우기·빈 지시 안내·캡처 전환과 단축키', async (
   await page.getByRole('button', { name: '캡처 1 보기' }).click();
   await expect(page.locator('[data-annotation-id]')).toHaveCount(2);
   await expect(page.getByRole('button', { name: '↶ 되돌리기', exact: true })).toBeDisabled();
+  await expectNoOverflow(page);
+});
+
+test('그림 글 토글은 저장되고 PNG에도 같은 라벨을 넣는다', async ({ page }) => {
+  await newProject(page);
+  await addDrawingImage(page);
+  await draw(page, '번호', [0.2, 0.2]);
+  await describeMark(page, '버튼을 더 크게');
+  const label = page.locator('.instruction-label');
+  await expect(label).toHaveText('버튼을 더 크게');
+  const toggle = page.getByRole('button', { name: '그림에 글 보이기' });
+  await toggle.click();
+  await expect(label).toHaveCount(0);
+  await page.reload();
+  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  await toggle.click();
+  await expect(label).toHaveText('버튼을 더 크게');
+  const position = await label.evaluate((element) => {
+    const matrix = (element as unknown as SVGGElement).transform.baseVal.consolidate()!.matrix;
+    return { x: Math.floor(matrix.e + 10), y: Math.floor(matrix.f + 3) };
+  });
+  await page.getByRole('button', { name: '내보내기', exact: true }).click();
+  const downloading = page.waitForEvent('download');
+  await page.getByRole('button', { name: '이 화면 PNG 저장', exact: true }).click();
+  const stream = (await (await downloading).createReadStream())!;
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const pixel = await page.evaluate(
+    async ({ base64, position }) => {
+      const image = new Image();
+      image.src = `data:image/png;base64,${base64}`;
+      await image.decode();
+      const canvas = document.createElement('canvas');
+      canvas.width = image.width;
+      canvas.height = image.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(image, 0, 0);
+      return [...ctx.getImageData(position.x, position.y, 1, 1).data];
+    },
+    { base64: Buffer.concat(chunks).toString('base64'), position },
+  );
+  expect(pixel).toEqual([255, 45, 85, 255]);
+});
+
+test('홈에서 두 항목을 연달아 체크하고 새로고침해도 진행이 남는다', async ({ page }) => {
+  await newProject(page);
+  await page.getByRole('link', { name: '홈으로', exact: true }).click();
+  await expect(page.getByRole('heading', { name: '지금 단계: 1. 아이디어 정리' })).toBeVisible();
+  await expect(page.getByRole('checkbox')).toHaveCount(2);
+  // 완료한 항목은 즉시 목록에서 빠지므로 체크 상태 대신 진행 숫자를 확인한다.
+  await page.getByRole('checkbox', { name: '만들 것을 한 문장으로 설명하기' }).click();
+  await page.getByRole('checkbox', { name: '누가 쓸지 정하기' }).click();
+  await expect(page.getByText('0/7 단계 · 2/21 항목 완료', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('0/7 단계 · 2/21 항목 완료', { exact: true })).toBeVisible();
+  await expect(page.getByRole('checkbox')).toHaveCount(1);
+  await page.getByRole('checkbox').click();
+  await expect(page.getByRole('heading', { name: '지금 단계: 2. 화면 목록' })).toBeVisible();
+  await expect(page.getByText('1/7 단계 · 3/21 항목 완료', { exact: true })).toBeVisible();
+  await expectNoOverflow(page);
+  await page.getByRole('link', { name: '전체 단계 보기' }).click();
+  await expect(page).toHaveURL(/\/guide$/);
+});
+
+test('용어 24개를 그림과 움직임으로 나눠 보고 문구를 복사한다', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.goto('/#/glossary');
+  await expect(page.getByRole('tab', { name: '그림으로 보는 용어 (12)' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await expect(page.locator('.term-thumbnail')).toHaveCount(12);
+  await expectNoOverflow(page);
+  await page.getByRole('tab', { name: '움직임이 있는 용어 (12)' }).click();
+  await expect(page.locator('.term-thumbnail')).toHaveCount(12);
+  await page.getByRole('button', { name: '서랍 메뉴 Drawer', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('화면 옆에서 밀려 나오는 메뉴예요.');
+  await page.getByRole('button', { name: '문구 복사', exact: true }).click();
+  await expect
+    .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+    .toContain('서랍 메뉴(Drawer)');
+  await expectNoOverflow(page);
+  await page.keyboard.press('Escape');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('.preview-drawer .motion-hint')).toBeVisible();
+  expect(
+    await page
+      .locator('.preview-drawer .preview-feature')
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe('none');
+});
+
+test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({ page }) => {
+  await newProject(page);
+  await addDrawingImage(page);
+  await draw(page, '번호', [0.2, 0.2]);
+  await describeMark(page, '첫 지시');
+  const button = page.getByRole('button', { name: '용어', exact: true });
+  await button.click();
+  const narrow = page.viewportSize()!.width < 960;
+  if (narrow) {
+    await expect(page.locator('.glossary-overlay')).toBeVisible();
+    await page.getByRole('button', { name: '빈 화면 안내 Empty state', exact: true }).focus();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: '닫기', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(button).toBeFocused();
+    await button.click();
+    await page.mouse.click(2, 2);
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await button.click();
+  } else {
+    const panel = await page.getByRole('complementary', { name: '용어 패널' }).boundingBox();
+    const canvas = await page.getByRole('region', { name: '캡처 작업 공간' }).boundingBox();
+    expect(panel!.width).toBe(360);
+    expect(canvas!.x + canvas!.width).toBeLessThan(panel!.x);
+  }
+  await expectNoOverflow(page);
+  await page.getByRole('button', { name: '카드 Card', exact: true }).click();
+  await page.getByRole('button', { name: '1번 지시에 넣기' }).focus();
+  await page.keyboard.press('Tab');
+  await expect(
+    page.getByRole('dialog').last().getByRole('button', { name: '닫기', exact: true }),
+  ).toBeFocused();
+  await page.getByRole('button', { name: '1번 지시에 넣기' }).click();
+  await expect(page.getByRole('status')).toHaveText('1번 지시에 넣었어요');
+  await page.keyboard.press('Escape');
+  if (narrow) await page.keyboard.press('Escape');
+  else await button.click();
+  await expect(page.locator('.annotation-list button')).toContainText(
+    '첫 지시\n사진과 제목을 둥근 카드(Card) 하나에 모아 주세요.',
+  );
+  await page.getByRole('button', { name: '↶ 되돌리기', exact: true }).click();
+  await expect(page.locator('.annotation-list button')).toHaveText('① 첫 지시');
   await expectNoOverflow(page);
 });

@@ -1,10 +1,17 @@
+import { labelLayout } from '../core/labelLayout';
 import type { Annotation } from '../core/types';
 import { arrowHead, markColors, markFont, markMetrics, noteLayout } from '../core/markStyle';
 
 export default function Mark({
   item,
   metrics,
+  width,
+  height,
+  showLabels,
 }: {
+  width: number;
+  height: number;
+  showLabels: boolean;
   item: Annotation;
   metrics: ReturnType<typeof markMetrics>;
 }) {
@@ -30,6 +37,7 @@ export default function Mark({
       </g>
     );
   }
+  const label = showLabels ? labelLayout(item, width, height) : null;
   const position = item.type === 'arrow' ? item.start : item.position;
   return (
     <g
@@ -57,6 +65,33 @@ export default function Mark({
             fill={markColors.stroke}
           />
         </>
+      )}
+      {label && (
+        <g
+          className="instruction-label"
+          stroke="none"
+          transform={`translate(${label.x} ${label.y})`}
+        >
+          <rect
+            width={label.width}
+            height={label.height}
+            rx={label.padding}
+            fill={markColors.stroke}
+          />
+          {label.lines.map((line, index) => (
+            <text
+              key={index}
+              x={label.padding}
+              y={label.padding + label.fontSize + index * label.lineHeight}
+              fontFamily={markFont}
+              fontSize={label.fontSize}
+              fill={markColors.text}
+              xmlSpace="preserve"
+            >
+              {line}
+            </text>
+          ))}
+        </g>
       )}
       <circle cx={position.x} cy={position.y} r={m.radius} fill={markColors.stroke} stroke="none" />
       <text

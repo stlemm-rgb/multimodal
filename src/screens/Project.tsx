@@ -4,7 +4,10 @@ import { buildProjectInstructions, buildSingleInstructions } from '../core/instr
 import type { ProjectStore } from '../core/storage';
 import type { LlmSettings } from '../core/llm/types';
 import Editor from '../editor/Editor';
-import AnnotationCanvas from '../editor/AnnotationCanvas';
+import GlossaryPanel from '../glossary/GlossaryPanel';
+import type { Annotation } from '../core/types';
+import { readShowLabels, saveShowLabels } from '../platform/labelSettings';
+import AnnotationCanvas, { type CanvasHandle } from '../editor/AnnotationCanvas';
 import { chooseFiles, imageSize, saveBlob } from '../platform/files';
 import { copyImage, copyText } from '../platform/clipboard';
 import { exportFileName, exportImage } from '../platform/exportImage';
@@ -25,6 +28,19 @@ export default function Project({
   store: ProjectStore;
   onSaved: (project: ProjectData) => void;
 }) {
+  const canvasRef = useRef<CanvasHandle>(null);
+  const [selectedMark, setSelectedMark] = useState<Annotation>();
+  const [glossaryOpen, setGlossaryOpen] = useState(false);
+  const [showLabels, setShowLabels] = useState(readShowLabels);
+  function toggleLabels() {
+    const next = !showLabels;
+    setShowLabels(next);
+    try {
+      saveShowLabels(next);
+    } catch {
+      setError('글 표시 설정을 저장하지 못했어요. 이번 화면에는 적용돼요.');
+    }
+  }
   const inputRef = useRef<HTMLInputElement>(null);
   const importing = useRef(false);
   const mounted = useRef(true);
@@ -157,7 +173,7 @@ export default function Project({
     try {
       const source = await store.getImage(capture.imageKey);
       if (!source) throw new Error('사진을 찾지 못했어요.');
-      const png = await exportImage(source, capture);
+      const png = await exportImage(source, capture, showLabels);
       if (copy)
         setMessage(
           (await copyImage(png))
@@ -180,48 +196,69 @@ export default function Project({
         title={project.name}
         back="#/"
         action={
-          <button
-            className="primary"
-            disabled={busy}
-            onClick={() => {
-              setSheet('내보내기');
-              setMessage('');
-            }}
-          >
-            내보내기
-          </button>
+          <>
+            <button aria-expanded={glossaryOpen} onClick={() => setGlossaryOpen(!glossaryOpen)}>
+              용어
+            </button>
+            <button
+              className="primary"
+              disabled={busy}
+              onClick={() => {
+                setSheet('내보내기');
+                setMessage('');
+              }}
+            >
+              내보내기
+            </button>
+          </>
         }
       />
-      <Editor inputRef={inputRef} onFiles={importFiles} busy={busy}>
-        {capture ? (
-          <figure className="image-preview">
-            <AnnotationCanvas
-              key={capture.id}
-              capture={capture}
-              store={store}
-              tool={tool}
-              disabled={busy}
-              onChange={saveCapture}
-            />
-            <figcaption>
-              캡처 {project.captureIds.indexOf(capture.id) + 1} · {capture.width} × {capture.height}
-            </figcaption>
-          </figure>
-        ) : (
-          <div className="empty-canvas">
-            <span aria-hidden="true">▧</span>
-            <h2>캡처를 추가하세요</h2>
-            <p className="muted">
-              이미지를 끌어 놓거나 Ctrl+V로 붙여 넣으세요.
-              <br />
-              Mac에서는 ⌘V를 눌러 주세요.
-            </p>
-            <button disabled={busy} onClick={() => chooseFiles(inputRef.current)}>
-              이미지 파일 고르기
-            </button>
-          </div>
+      <div className={`project-workspace ${glossaryOpen ? 'with-glossary' : ''}`}>
+        <Editor inputRef={inputRef} onFiles={importFiles} busy={busy}>
+          {capture ? (
+            <figure className="image-preview">
+              <AnnotationCanvas
+                ref={canvasRef}
+                showLabels={showLabels}
+                onToggleLabels={toggleLabels}
+                onSelectionChange={setSelectedMark}
+                key={capture.id}
+                capture={capture}
+                store={store}
+                tool={tool}
+                disabled={busy}
+                onChange={saveCapture}
+              />
+              <figcaption>
+                캡처 {project.captureIds.indexOf(capture.id) + 1} · {capture.width} ×{' '}
+                {capture.height}
+              </figcaption>
+            </figure>
+          ) : (
+            <div className="empty-canvas">
+              <span aria-hidden="true">▧</span>
+              <h2>캡처를 추가하세요</h2>
+              <p className="muted">
+                이미지를 끌어 놓거나 Ctrl+V로 붙여 넣으세요.
+                <br />
+                Mac에서는 ⌘V를 눌러 주세요.
+              </p>
+              <button disabled={busy} onClick={() => chooseFiles(inputRef.current)}>
+                이미지 파일 고르기
+              </button>
+            </div>
+          )}
+        </Editor>
+        {glossaryOpen && (
+          <GlossaryPanel
+            onClose={() => setGlossaryOpen(false)}
+            selectedNumber={
+              selectedMark && selectedMark.type !== 'note' ? selectedMark.number : undefined
+            }
+            onInsert={(text) => canvasRef.current?.appendInstruction(text)}
+          />
         )}
-      </Editor>
+      </div>
       {busy && <p role="status">캡처를 저장하고 있어요…</p>}
       {error && (
         <p role="alert" className="error-message">

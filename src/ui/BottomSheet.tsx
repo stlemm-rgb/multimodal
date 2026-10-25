@@ -4,7 +4,9 @@ export default function BottomSheet({
   title,
   onClose,
   children,
+  className = '',
 }: {
+  className?: string;
   title: string;
   onClose: () => void;
   children: ReactNode;
@@ -26,9 +28,10 @@ export default function BottomSheet({
   return (
     <dialog
       ref={ref}
-      className="bottom-sheet"
+      className={`bottom-sheet ${className}`}
       aria-labelledby={titleId}
       onCancel={(event) => {
+        event.stopPropagation();
         event.preventDefault();
         onClose();
       }}
@@ -45,6 +48,7 @@ export default function BottomSheet({
       }}
       onKeyDown={(event) => {
         if (event.key !== 'Tab') return;
+        event.stopPropagation();
         const elements = Array.from(
           event.currentTarget.querySelectorAll<HTMLElement>(
             'button:not(:disabled), a[href], input:not(:disabled), textarea:not(:disabled), select:not(:disabled), [tabindex="0"]',

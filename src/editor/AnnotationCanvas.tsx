@@ -1,4 +1,11 @@
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type Ref,
+  type PointerEvent,
+} from 'react';
 import type { Capture } from '../core/project';
 import type { Annotation, Point } from '../core/types';
 import type { ProjectStore } from '../core/storage';
@@ -17,6 +24,9 @@ import BottomSheet from '../ui/BottomSheet';
 import { imagePoint } from './coords';
 import Mark from './Mark';
 
+export interface CanvasHandle {
+  appendInstruction: (text: string) => void;
+}
 type Gesture = {
   pointerId: number;
   start: Point;
@@ -32,7 +42,15 @@ export default function AnnotationCanvas({
   tool,
   disabled,
   onChange,
+  showLabels,
+  onToggleLabels,
+  onSelectionChange,
+  ref,
 }: {
+  ref?: Ref<CanvasHandle>;
+  showLabels: boolean;
+  onToggleLabels: () => void;
+  onSelectionChange: (item: Annotation | undefined) => void;
   capture: Capture;
   store: ProjectStore;
   tool: string;
@@ -49,6 +67,23 @@ export default function AnnotationCanvas({
   const gesture = useRef<Gesture | null>(null);
   const metrics = markMetrics(capture.width, capture.height);
   const annotations = preview ?? history.present;
+  const selectedItem = history.present.find((item) => item.id === selected);
+  useEffect(() => {
+    onSelectionChange(selectedItem);
+  }, [selectedItem, onSelectionChange]);
+  useImperativeHandle(ref, () => ({
+    appendInstruction(text) {
+      const item = current.current.present.find((entry) => entry.id === selected);
+      if (item && item.type !== 'note')
+        commit(
+          updateInstruction(
+            current.current.present,
+            item.id,
+            [item.instruction, text].filter(Boolean).join('\n'),
+          ),
+        );
+    },
+  }));
   function apply(next: History<Annotation[]>) {
     if (next === current.current) return;
     current.current = next;
@@ -173,6 +208,9 @@ export default function AnnotationCanvas({
   return (
     <>
       <div className="history-bar">
+        <button aria-pressed={showLabels} onClick={onToggleLabels}>
+          그림에 글 보이기
+        </button>
         <button
           disabled={disabled || !canUndo(history)}
           onClick={() => apply(undo(current.current))}
@@ -206,7 +244,13 @@ export default function AnnotationCanvas({
           {annotations.map((item) => (
             <g key={item.id} data-annotation-id={item.id} data-annotation-type={item.type}>
               {item.id === selected && <Selection item={item} metrics={metrics} />}
-              <Mark item={item} metrics={metrics} />
+              <Mark
+                item={item}
+                metrics={metrics}
+                width={capture.width}
+                height={capture.height}
+                showLabels={showLabels}
+              />
               {item.type === 'box' && (
                 <rect
                   x={item.position.x}

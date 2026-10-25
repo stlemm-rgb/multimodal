@@ -1,3 +1,5 @@
+import { labelLayout } from '../core/labelLayout';
+import { readShowLabels } from './labelSettings';
 import type { Capture } from '../core/project';
 import { arrowHead, markColors, markFont, markMetrics, noteLayout } from '../core/markStyle';
 import { createImageUrl, releaseImageUrl } from './files';
@@ -12,6 +14,7 @@ export function exportFileName(projectName: string, screenIndex: number): string
 export async function exportImage(
   blob: Blob,
   capture: Pick<Capture, 'width' | 'height' | 'annotations'>,
+  showLabels = readShowLabels(),
 ): Promise<Blob> {
   const url = createImageUrl(blob);
   try {
@@ -63,6 +66,23 @@ export async function exportImage(
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
+      }
+      const label = showLabels ? labelLayout(item, capture.width, capture.height) : null;
+      if (label) {
+        ctx.beginPath();
+        ctx.roundRect(label.x, label.y, label.width, label.height, label.padding);
+        ctx.fill();
+        ctx.fillStyle = markColors.text;
+        ctx.font = `${label.fontSize}px ${markFont}`;
+        ctx.textAlign = 'left';
+        label.lines.forEach((line, index) =>
+          ctx.fillText(
+            line,
+            label.x + label.padding,
+            label.y + label.padding + label.fontSize + index * label.lineHeight,
+          ),
+        );
+        ctx.fillStyle = markColors.stroke;
       }
       const point = item.type === 'arrow' ? item.start : item.position;
       ctx.beginPath();
