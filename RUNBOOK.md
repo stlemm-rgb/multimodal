@@ -2,18 +2,23 @@
 
 > 설치·실행·검사 명령. 같은 실수를 두 번 하면 여기에 적는다.
 
-## 새 PC 준비
-1. Git 설치 후 처음 한 번:
-   ```powershell
-   git config --global core.autocrlf true
-   ```
-   저장소를 받은 뒤, 공개 저장소라 이메일은 **GitHub 비공개 주소**로 (저장소 안에서만):
-   `git config user.email "<GitHub 숫자 ID>+<아이디>@users.noreply.github.com"` — 주소는 GitHub 설정 → Emails에서 확인
-2. **AI 작업 문서**(CLAUDE.md·AGENTS.md·`.claude/`·`refs/`)는 git에 올라가지 않는다. 새 PC로 옮길 때는 따로 복사한다.
-3. 필요한 것: **Node.js 22 이상** (`node --version`), Chrome(자동 화면 검사용)
-4. 저장소 받기 → `npm install` → 전체 검사 통과 확인
-5. HANDOFF.md부터 읽고 이어서 작업
-6. PC를 옮길 때는 끝낸 PC에서 커밋·push, 새 PC에서 `git pull` 먼저. 한 번에 한 PC에서만
+## 새 PC 준비 (다른 PC에서 이어 하기)
+| 필요한 것 | 확인 |
+| --- | --- |
+| Git | `git --version` |
+| Node.js 22 이상 | `node --version` |
+| Chrome | 화면 검사에 씀 |
+| VS Code + Claude Code + Codex(ChatGPT 확장) 로그인 | Codex 하청에 씀 |
+
+1. 처음 한 번: `git config --global core.autocrlf true`
+2. 받기: `git clone https://github.com/stlemm-rgb/multimodal.git C:\Project\multimodal` (모든 PC에서 **같은 경로**)
+3. 저장소 안에서 커밋 이메일을 GitHub 비공개 주소로: `git config user.email "<GitHub 숫자 ID>+<아이디>@users.noreply.github.com"` (GitHub 설정 → Emails에서 확인)
+4. **AI 작업 문서 풀기**: 이전 PC에서 만든 `multimodal-ai-docs.zip`을 저장소 폴더에 풀기 → CLAUDE.md·AGENTS.md·`.claude/`·`refs/`가 생김 (git에 안 올라가는 파일들). 안의 `_claude_memory/`는 Claude 기억 — 새 PC의 Claude 기억 폴더(Claude Code가 이 프로젝트용으로 만드는 `memory` 폴더)에 복사하거나, 없어도 HANDOFF·AGENTS만으로 이어 갈 수 있음
+5. `npm install` → `npm run check` 종료 코드 0 확인
+6. HANDOFF.md부터 읽고 이어서 작업
+7. PC를 옮길 때: 끝낸 PC에서 커밋·push + **AI 문서 zip 다시 만들기**(아래), 새 PC에서 `git pull` + zip 풀기. 한 번에 한 PC에서만
+
+**AI 문서 zip 만들기** (끝낸 PC에서, Claude에게 "AI 문서 묶어 줘"라고 해도 됨): 저장소 폴더에서 CLAUDE.md·AGENTS.md·`.claude/`·`refs/` + Claude 기억 폴더를 `_claude_memory/`로 넣어 `..\multimodal-ai-docs.zip`으로 압축 → OneDrive·USB로 옮김.
 
 ## 커밋 순서 (매번)
 ```bash

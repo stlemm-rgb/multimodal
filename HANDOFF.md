@@ -1,6 +1,6 @@
 # HANDOFF — 지금 상태와 남은 일
 
-> 마지막 갱신: 2026-10-25 (앱 틀 완성 직후). 기획 원본은 docs/PRODUCT.md
+> 마지막 갱신: 2026-10-26 (용어 서랍까지). 기획 원본은 docs/PRODUCT.md. **다른 PC에서 이어 하기 = RUNBOOK "새 PC 준비"**
 
 ## 지금 상태
 - Vite + React + TS 웹앱. CapCut식 어두운 화면. `npm run check` 통과(단위 36 · 화면 28).
@@ -33,7 +33,7 @@
 5. 안드로이드: Capacitor 감싸기 (웹 첫 버전 뒤)
 
 ## 사용자가 할 일
-- AI 작업 문서 백업 방법 정하기 (git 밖이라 이 PC가 망가지면 사라짐)
+- AI 작업 문서는 git 밖 → PC를 옮길 때마다 `multimodal-ai-docs.zip`으로 옮긴다 (RUNBOOK "새 PC 준비")
 
 ## 작은 정리 거리
 - workflow 경고: actions 버전(Node 20 낡음), ubuntu-latest → Ubuntu 26 이동
