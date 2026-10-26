@@ -140,22 +140,33 @@ export default function AnnotationCanvas({
     gesture.current = null;
     setPreview(null);
   }
+  /** 번호 동그라미는 어떤 도구에서든 누르면 지시문 창, 끌면 옮기기다. 위에 그린 것부터 찾는다. */
+  function badgeAt(p: Point) {
+    return [...current.current.present].reverse().find((item) => {
+      if (item.type === 'note') return false;
+      const c = item.type === 'arrow' ? item.start : item.position;
+      return Math.hypot(p.x - c.x, p.y - c.y) <= metrics.radius;
+    })?.id;
+  }
   function down(event: PointerEvent<SVGSVGElement>) {
     if (disabled || gesture.current || !event.isPrimary || event.button !== 0) return;
     event.preventDefault();
+    const start = point(event);
+    const badge = badgeAt(start);
     const id =
-      tool === '선택'
+      badge ??
+      (tool === '선택'
         ? ((event.target as Element)
             .closest('[data-annotation-id]')
             ?.getAttribute('data-annotation-id') ?? undefined)
-        : undefined;
+        : undefined);
     setSelected(id ?? '');
     gesture.current = {
       pointerId: event.pointerId,
-      start: point(event),
+      start,
       client: { x: event.clientX, y: event.clientY },
       id,
-      tool,
+      tool: badge ? '선택' : tool,
       base: current.current.present,
       moved: false,
     };

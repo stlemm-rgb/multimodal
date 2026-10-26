@@ -318,6 +318,16 @@ test('표시 추가·이동·실행 취소·저장 유지와 PNG·지시문 내�
   const pinCircle = page.locator('[data-annotation-type="pin"] circle');
   await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(240, 2);
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  // 다른 도구를 골라도 번호를 끌면 옮겨지고, 누르면 기존 지시문이 열린다.
+  await draw(page, '박스', [0.3, 0.25], [0.2, 0.25]);
+  await expect(marks).toHaveCount(3);
+  await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(160, 2);
+  await draw(page, '번호', [0.2, 0.25]);
+  await expect(marks).toHaveCount(3);
+  await expect(page.getByRole('dialog').getByRole('textbox')).toHaveValue('버튼을 더 크게');
+  await page.getByRole('button', { name: '확인', exact: true }).click();
+  await draw(page, '화살표', [0.2, 0.25], [0.3, 0.25]);
+  await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(240, 2);
   await page.reload();
   await expect(marks).toHaveCount(3);
   await expect.poll(async () => Number(await pinCircle.getAttribute('cx'))).toBeCloseTo(240, 2);
