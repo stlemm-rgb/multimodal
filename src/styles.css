@@ -942,12 +942,18 @@ summary {
   padding: var(--space-2);
 }
 .term-thumbnail strong,
-.term-text-only {
-  justify-content: center;
-  min-height: 96px;
-}
 .term-thumbnail small {
   overflow-wrap: anywhere;
+}
+.term-text-only {
+  justify-content: flex-start;
+  text-align: left;
+  padding: var(--space-3);
+}
+.term-meaning {
+  color: var(--color-muted);
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 .term-thumbnail small {
   color: var(--color-muted);

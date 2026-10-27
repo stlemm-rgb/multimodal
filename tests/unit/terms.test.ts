@@ -49,7 +49,9 @@ it('사전마다 분류·용어·짝이 맞고, 예문 꼴을 지킨다', () => 
       expect(term.id).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u);
       expect(categoryIds).toContain(term.category);
       for (const value of Object.values(term)) expect(value.trim()).not.toBe('');
-      if (dictionary.forAi) expect(term.sayToAi).toContain(`(${term.english})`);
+      // 이름이 이미 영어(JPG 사진·API 키)면 그 영어만, 아니면 "이름(English)" 꼴.
+      const latin = term.name.match(/[A-Za-z][A-Za-z0-9]*/u)?.[0];
+      if (dictionary.forAi) expect(term.sayToAi).toContain(latin ?? `(${term.english})`);
       else expect(term.sayToAi).toContain('→');
     }
     for (const { a, b } of dictionary.confusions)

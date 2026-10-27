@@ -98,6 +98,7 @@ export default function GlossaryBrowser({
                 {Preview && <Preview />}
                 <strong>{term.name}</strong>
                 <small>{term.english}</small>
+                {!Preview && <span className="term-meaning">{term.meaning}</span>}
               </button>
             );
           })}

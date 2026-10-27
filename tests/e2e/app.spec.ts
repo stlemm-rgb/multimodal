@@ -562,7 +562,7 @@ test('용어를 분류별로 보고 헷갈리는 말로 건너가며 문구를 �
   // 다른 사전으로 바꾸면 그림 없이 글 카드로 보이고 예문 제목도 바뀐다.
   const dictionarySwitch = page.getByRole('group', { name: '사전 종류' });
   await dictionarySwitch.getByRole('button', { name: '판교 사투리', exact: true }).click();
-  await page.getByRole('button', { name: '얼라인 Align', exact: true }).click();
+  await page.getByRole('button', { name: /^얼라인 Align/u }).click();
   await expect(page.getByRole('dialog')).toContainText('쉬운 말로 바꾸면');
   await page.keyboard.press('Escape');
   await expectNoOverflow(page);
