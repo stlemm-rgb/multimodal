@@ -2,6 +2,9 @@ import { expect, it } from 'vitest';
 import { categories, confusions, terms } from '../../src/glossary/data/terms';
 import { previews } from '../../src/glossary/previews';
 it('용어마다 고유한 ID, 분류, 설명, 미리보기가 있다', () => {
+  expect(terms).toHaveLength(56);
+  for (const category of categories)
+    expect(terms.filter((term) => term.category === category.id).length).toBeGreaterThan(0);
   const ids = terms.map((term) => term.id);
   expect(new Set(ids).size).toBe(terms.length);
   expect(Object.keys(previews).sort()).toEqual([...ids].sort());
@@ -20,6 +23,7 @@ it('용어마다 고유한 ID, 분류, 설명, 미리보기가 있다', () => {
 it('헷갈리는 짝은 있는 용어 둘을 잇고 겹치지 않는다', () => {
   const ids = new Set(terms.map((term) => term.id));
   const pairs = confusions.map(({ a, b }) => [a, b].sort().join('|'));
+  expect(confusions).toHaveLength(13);
   expect(new Set(pairs).size).toBe(confusions.length);
   for (const { a, b, difference } of confusions) {
     expect(ids.has(a) && ids.has(b) && a !== b).toBe(true);

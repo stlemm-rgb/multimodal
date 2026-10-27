@@ -1,0 +1,528 @@
+.preview-feature.more-demo,
+.preview-feature.more-comparison {
+  inset: 23% 6% 8%;
+  padding: 6%;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+.more-demo > span,
+.more-sample > span {
+  display: block;
+}
+.more-demo small {
+  font-size: 10px;
+}
+.more-demo .more-field {
+  min-height: 24px;
+  margin-top: 5px;
+  padding: 4px;
+  border: 1px solid var(--color-muted);
+  border-radius: 4px;
+}
+.more-caret {
+  display: inline-block;
+  height: 11px;
+  border-left: 1px solid var(--color-accent);
+  margin-left: 2px;
+}
+.more-demo .more-result {
+  padding-top: 5px;
+}
+.more-demo .more-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.more-switch {
+  position: relative;
+  width: 30px;
+  height: 16px;
+  background: var(--color-placeholder);
+  border-radius: 12px;
+  margin-left: auto;
+}
+.more-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-text);
+}
+.more-switch.more-on {
+  background: var(--color-accent);
+}
+.more-switch.more-on::after {
+  left: 16px;
+  background: var(--color-on-accent);
+}
+.more-check,
+.more-radio {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--color-muted);
+  border-radius: 3px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.more-radio {
+  border-radius: 50%;
+}
+.more-demo .more-selected,
+.more-action {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.more-demo .more-track,
+.more-progress {
+  position: relative;
+  height: 6px;
+  margin: 20px 6px 12px;
+  border-radius: 6px;
+  background: var(--color-placeholder);
+}
+.more-thumb {
+  position: absolute;
+  left: 65%;
+  top: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: more-slide 2.8s infinite;
+}
+.more-demo .more-range {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+.more-demo .more-segments,
+.more-demo .more-stepper,
+.more-demo .more-pages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  padding: 3px;
+}
+.more-segments > *,
+.more-stepper > *,
+.more-pages > * {
+  padding: 2px;
+  min-width: 0;
+  text-align: center;
+}
+.more-segments b,
+.more-pages b {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-radius: 3px;
+}
+.more-demo .more-stepper {
+  margin-top: 10px;
+  font-size: 17px;
+}
+.more-demo .more-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  margin-top: 8px;
+  font-size: 9px;
+  text-align: center;
+}
+.more-calendar > span {
+  border-radius: 3px;
+}
+.preview-inline-error .more-field {
+  border-color: var(--color-error);
+}
+.more-error {
+  color: var(--color-error);
+}
+.more-demo .more-progress {
+  height: 10px;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;
+}
+.more-progress > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--color-accent);
+  transform-origin: left;
+  animation: more-progress 2.8s infinite;
+}
+.preview-snackbar .more-demo {
+  inset: auto 5% 12%;
+  padding: 8px 5px;
+  display: flex;
+  justify-content: space-between;
+  gap: 3px;
+  background: var(--color-raised);
+  font-size: 10px;
+  animation: more-notice 2.8s infinite;
+}
+.preview-snackbar b {
+  color: var(--color-accent);
+}
+.preview-sidebar .more-demo {
+  display: flex;
+  gap: 8%;
+  padding: 0;
+}
+.more-side {
+  width: 36%;
+  padding: 6px 3px;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.more-side > span {
+  display: block;
+  margin-top: 9px;
+}
+.more-main {
+  flex: 1;
+  min-width: 0;
+}
+.more-demo i {
+  background: var(--color-placeholder);
+  opacity: 1;
+}
+.preview-sticky-header .more-demo {
+  padding-top: 0;
+}
+.more-fixed {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 5px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+.more-scroll {
+  padding-top: 25px;
+  animation: more-scroll 2.8s infinite;
+}
+.preview-hero-section .more-demo {
+  text-align: center;
+  padding: 3px;
+}
+.more-hero-art {
+  font-size: 24px;
+  background: var(--color-accent-soft);
+}
+.more-demo .more-action {
+  width: 60%;
+  margin: 4px auto 0;
+  border-radius: 4px;
+}
+.more-demo .more-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+}
+.more-path > span {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+.more-press-item,
+.more-drag-item {
+  position: relative;
+  padding: 5px;
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+  background: var(--color-accent-soft);
+}
+.more-finger {
+  position: absolute;
+  right: 8%;
+  top: 10px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-text);
+  border-radius: 50%;
+  background: var(--color-backdrop);
+}
+.more-press-item .more-finger {
+  animation: more-hold 2.8s infinite;
+}
+.more-context {
+  position: relative;
+  width: 65%;
+  margin: 5px 0 0 auto;
+  padding: 4px;
+  background: var(--color-raised);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  animation: more-menu 2.8s infinite;
+}
+.more-context > span {
+  display: block;
+}
+.more-drag-item {
+  height: 27px;
+  margin-bottom: 5px;
+  font-size: 10px;
+}
+.more-drag-first {
+  z-index: 1;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  animation: more-reorder-first 2.8s infinite;
+}
+.more-drag-second {
+  animation: more-reorder-second 2.8s infinite;
+}
+.preview-feature.more-comparison {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 0;
+}
+.more-comparison > span {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+.more-comparison small {
+  display: block;
+  padding: 2px;
+  text-align: center;
+  font-size: 10px;
+  background: var(--color-raised);
+  color: var(--color-muted);
+}
+.more-comparison .more-after small {
+  color: var(--color-accent);
+}
+.more-sample {
+  position: relative;
+  display: block;
+  min-height: 75px;
+  padding: 12px 4px;
+  font-size: 10px;
+}
+.more-box {
+  border: 1px solid var(--color-muted);
+  background: var(--color-raised);
+  padding: 4px 1px;
+  text-align: center;
+}
+.preview-padding .more-box {
+  padding: 0;
+}
+.preview-padding .more-after .more-box {
+  padding: 12px 3px;
+}
+.preview-margin .more-after .more-box + .more-box {
+  margin-top: 14px;
+}
+.preview-font-size .more-before .more-copy {
+  font-size: 9px;
+}
+.preview-font-size .more-after .more-copy {
+  font-size: 17px;
+}
+.preview-alignment .more-before .more-copy:nth-child(2) {
+  text-align: right;
+}
+.preview-alignment .more-before .more-copy:nth-child(3) {
+  text-align: center;
+}
+.preview-alignment .more-after .more-sample {
+  border-left: 2px solid var(--color-accent);
+}
+.preview-border-radius .more-box {
+  height: 50px;
+  padding-top: 15px;
+}
+.preview-border-radius .more-after .more-box {
+  border-radius: 14px;
+}
+.preview-accent-color .more-box + .more-box {
+  margin-top: 6px;
+}
+.preview-accent-color .more-after .more-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  border-color: var(--color-accent);
+}
+.preview-font-weight .more-title {
+  font-weight: 400;
+}
+.preview-font-weight .more-after .more-title {
+  font-weight: 900;
+}
+.preview-border .more-box {
+  border-color: var(--color-transparent);
+  background: var(--color-background);
+}
+.preview-border .more-after .more-box {
+  border-color: var(--color-accent);
+}
+.preview-shadow .more-sample {
+  background: var(--color-raised);
+}
+.preview-shadow .more-box {
+  background: var(--color-surface);
+  border: 0;
+  margin: 2px 3px;
+  padding: 9px 0;
+}
+.preview-shadow .more-after .more-box {
+  box-shadow: 3px 6px 6px var(--color-backdrop);
+}
+.preview-line-height .more-copy {
+  line-height: 11px;
+}
+.preview-line-height .more-after .more-copy {
+  line-height: 21px;
+}
+.preview-dark-mode .more-box {
+  background: var(--color-text);
+  color: var(--color-background);
+}
+.preview-dark-mode .more-after .more-box {
+  background: var(--color-background);
+  color: var(--color-text);
+}
+.preview-dark-mode .more-box i {
+  height: 3px;
+  margin: 8px 3px;
+  background: var(--color-muted);
+  opacity: 1;
+}
+.more-map {
+  padding: 4px;
+  border-left: 4px solid var(--color-muted);
+  border-bottom: 4px solid var(--color-muted);
+  text-align: right;
+}
+.more-tint {
+  position: absolute;
+  inset: 12px 4px;
+  background: var(--color-accent);
+}
+.preview-opacity .more-after .more-tint {
+  opacity: 0.3;
+}
+@keyframes more-slide {
+  0%,
+  15%,
+  100% {
+    left: 0;
+  }
+  50%,
+  80% {
+    left: calc(100% - 14px);
+  }
+}
+@keyframes more-progress {
+  0%,
+  10% {
+    transform: scaleX(0.2);
+  }
+  45% {
+    transform: scaleX(0.6);
+  }
+  80%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+@keyframes more-notice {
+  0%,
+  100% {
+    transform: translateY(180%);
+    opacity: 0;
+  }
+  20%,
+  80% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes more-scroll {
+  0%,
+  15%,
+  100% {
+    transform: translateY(0);
+  }
+  60%,
+  85% {
+    transform: translateY(-55px);
+  }
+}
+@keyframes more-hold {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+  15%,
+  55% {
+    opacity: 1;
+    transform: scale(0.8);
+  }
+  65%,
+  90% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+}
+@keyframes more-menu {
+  0%,
+  45%,
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60%,
+  90% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes more-reorder-first {
+  0%,
+  15%,
+  100% {
+    transform: translateY(0);
+  }
+  55%,
+  85% {
+    transform: translateY(32px);
+  }
+}
+@keyframes more-reorder-second {
+  0%,
+  15%,
+  100% {
+    transform: translateY(0);
+  }
+  55%,
+  85% {
+    transform: translateY(-32px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .preview-phone .more-demo,
+  .preview-phone .more-demo * {
+    animation: none;
+  }
+}

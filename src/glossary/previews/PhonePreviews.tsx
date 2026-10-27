@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-function Phone({
+export function Phone({
   id,
   motion = false,
   children,
@@ -24,7 +24,7 @@ function Phone({
     </span>
   );
 }
-const bars = (
+export const bars = (
   <>
     <i />
     <i />
