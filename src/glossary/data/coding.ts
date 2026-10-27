@@ -2,7 +2,7 @@ import type { Dictionary } from './types';
 
 export const coding: Dictionary = {
   id: 'coding',
-  label: '코딩',
+  label: '개발 용어',
   exampleTitle: 'AI에게는 이렇게 말하세요',
   forAi: true,
   categories: [
@@ -25,6 +25,10 @@ export const coding: Dictionary = {
     {
       id: 'security',
       label: '보안',
+    },
+    {
+      id: 'plan',
+      label: '계획·기획',
     },
   ],
   terms: [
@@ -300,8 +304,103 @@ export const coding: Dictionary = {
       sayToAi:
         '메모 앱에서 다른 사람의 메모를 읽지 못하도록 권한 확인(Authorization)을 추가해 주세요.',
     },
+    {
+      id: 'issue',
+      category: 'debug',
+      name: '이슈',
+      english: 'Issue',
+      meaning: '고치거나 정해야 할 일 하나하나예요. 오류뿐 아니라 새 기능 요청도 이슈라고 해요.',
+      sayToAi: '결제가 두 번 되는 문제를 이슈(Issue)로 정리하고, 원인과 고칠 순서를 알려 주세요.',
+    },
+    {
+      id: 'blocker',
+      category: 'debug',
+      name: '블로커',
+      english: 'Blocker',
+      meaning: '해결하기 전까지 다음 일을 못 하게 막는 문제예요.',
+      sayToAi:
+        '지금 작업을 막고 있는 블로커(Blocker)가 무엇인지 먼저 알려 주고, 그것부터 해결해 주세요.',
+    },
+    {
+      id: 'hotfix',
+      category: 'debug',
+      name: '핫픽스',
+      english: 'Hotfix',
+      meaning: '이미 쓰고 있는 앱의 급한 오류를 빠르게 고쳐 바로 반영하는 것이에요.',
+      sayToAi:
+        '쇼핑몰 결제 오류만 고치는 핫픽스(Hotfix)를 만들고, 다른 기능은 건드리지 말아 주세요.',
+    },
+    {
+      id: 'rollback',
+      category: 'release',
+      name: '롤백',
+      english: 'Rollback',
+      meaning: '새로 올린 버전에 문제가 있을 때 바로 앞 버전으로 되돌리는 것이에요.',
+      sayToAi:
+        '방금 배포한 버전에서 로그인이 안 되면 이전 버전으로 롤백(Rollback)하는 방법을 알려 주세요.',
+    },
+    {
+      id: 'launch',
+      category: 'release',
+      name: '런칭',
+      english: 'Launch',
+      meaning: '만든 앱이나 서비스를 사람들에게 처음 공개하는 것이에요.',
+      sayToAi: '메모 앱 런칭(Launch) 전에 꼭 확인할 것을 목록으로 정리해 주세요.',
+    },
+    {
+      id: 'backlog',
+      category: 'plan',
+      name: '백로그',
+      english: 'Backlog',
+      meaning: '지금 당장은 아니지만 나중에 할 기능과 고칠 일을 모아 둔 목록이에요.',
+      sayToAi: '이번에 못 하는 기능은 백로그(Backlog)에 적어 두고, 중요한 순서로 정렬해 주세요.',
+    },
+    {
+      id: 'milestone',
+      category: 'plan',
+      name: '마일스톤',
+      english: 'Milestone',
+      meaning: '긴 작업 중간에 꼭 도달할 목표 지점이에요. 예: 로그인까지 완성.',
+      sayToAi:
+        '일정 앱을 3개의 마일스톤(Milestone)으로 나누고, 각 단계에서 끝낼 기능을 정해 주세요.',
+    },
+    {
+      id: 'sprint',
+      category: 'plan',
+      name: '스프린트',
+      english: 'Sprint',
+      meaning: '1~2주처럼 짧게 정한 기간에 할 일을 묶어 끝내는 방식이에요.',
+      sayToAi:
+        '이번 주를 한 스프린트(Sprint)로 보고, 장바구니 기능까지 끝낼 할 일 목록을 만들어 주세요.',
+    },
+    {
+      id: 'wireframe',
+      category: 'plan',
+      name: '와이어프레임',
+      english: 'Wireframe',
+      meaning: '색과 꾸밈 없이 무엇을 어디에 놓을지만 그린 화면 밑그림이에요.',
+      sayToAi: '카페 주문 화면의 와이어프레임(Wireframe)을 먼저 글 상자로 그려서 보여 주세요.',
+    },
+    {
+      id: 'mockup',
+      category: 'plan',
+      name: '목업',
+      english: 'Mockup',
+      meaning: '색과 글꼴까지 넣어 완성 모습을 미리 보여 주는 화면 시안이에요.',
+      sayToAi: '와이어프레임이 정해지면 실제 색과 글꼴을 넣은 목업(Mockup)으로 보여 주세요.',
+    },
   ],
   confusions: [
+    {
+      a: 'wireframe',
+      b: 'mockup',
+      difference: '와이어프레임은 배치만 그린 밑그림이고, 목업은 색까지 넣은 완성 시안이에요.',
+    },
+    {
+      a: 'hotfix',
+      b: 'rollback',
+      difference: '핫픽스는 문제를 빨리 고쳐 올리고, 롤백은 고치지 않고 앞 버전으로 되돌려요.',
+    },
     {
       a: 'server',
       b: 'database',

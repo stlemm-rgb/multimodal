@@ -561,9 +561,10 @@ test('용어를 분류별로 보고 헷갈리는 말로 건너가며 문구를 �
   await page.keyboard.press('Escape');
   // 다른 사전으로 바꾸면 그림 없이 글 카드로 보이고 예문 제목도 바뀐다.
   const dictionarySwitch = page.getByRole('group', { name: '사전 종류' });
-  await dictionarySwitch.getByRole('button', { name: '판교 사투리', exact: true }).click();
-  await page.getByRole('button', { name: /^얼라인 Align/u }).click();
-  await expect(page.getByRole('dialog')).toContainText('쉬운 말로 바꾸면');
+  await dictionarySwitch.getByRole('button', { name: '개발 용어', exact: true }).click();
+  await page.getByRole('tab', { name: /^계획·기획/u }).click();
+  await page.getByRole('button', { name: /^와이어프레임 Wireframe/u }).click();
+  await expect(page.getByRole('dialog')).toContainText('목업은 색까지 넣은 완성 시안');
   await page.keyboard.press('Escape');
   await expectNoOverflow(page);
   await dictionarySwitch.getByRole('button', { name: 'UI', exact: true }).click();
@@ -632,7 +633,7 @@ test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({
   await page.keyboard.press('Escape');
   await page.keyboard.press('Escape');
   await expect(page.locator('.annotation-list button')).toContainText(
-    '첫 지시\n사진과 제목을 둥근 카드(Card) 하나에 모아 주세요.',
+    '첫 지시\n상품 사진과 제목을 카드(Card)에 모으고, 누르면 상품 설명이 열리게 해 주세요.',
   );
   await page.getByRole('button', { name: '↶ 되돌리기', exact: true }).click();
   await expect(page.locator('.annotation-list button')).toHaveText('① 첫 지시');

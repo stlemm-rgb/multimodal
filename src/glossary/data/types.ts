@@ -19,6 +19,8 @@ export interface Dictionary {
   /** 사전 바꾸기 버튼 글자. 짧게. */
   label: string;
   exampleTitle: string;
+  /** 사전 맨 위 짧은 안내. */
+  tip?: { title: string; example: string };
   /** 예문을 지시문에 넣을 수 있는가. */
   forAi: boolean;
   categories: readonly { id: string; label: string }[];

@@ -383,3 +383,170 @@ export function Opacity() {
     </BeforeAfter>
   );
 }
+
+export function BentoGrid() {
+  return (
+    <Demo id="bento-grid">
+      <span className="more-bento">
+        <b>추천</b>
+        <span>커피</span>
+        <span>차</span>
+      </span>
+    </Demo>
+  );
+}
+export function ResponsiveLayout() {
+  return (
+    <Demo id="responsive-layout" motion>
+      <span className="more-responsive">
+        <span>1</span>
+        <span>2</span>
+        <span>3</span>
+      </span>
+    </Demo>
+  );
+}
+export function CtaButton() {
+  return (
+    <Demo id="cta-button">
+      <b>첫 시작</b>
+      {bars}
+      <span className="more-cta">시작하기</span>
+      <small>둘러보기</small>
+    </Demo>
+  );
+}
+export function Tabs() {
+  return (
+    <Demo id="tabs">
+      <span className="more-tabs">
+        <b>설명</b>
+        <span>후기</span>
+      </span>
+      <span className="more-tab-panel">상품 설명{bars}</span>
+    </Demo>
+  );
+}
+export function Overlay() {
+  return (
+    <Demo id="overlay">
+      <span className="more-overlay-base">
+        주문 목록{bars}
+        {bars}
+      </span>
+      <span className="more-backdrop" />
+      <span className="more-dialog">
+        주문 확인<span>취소 확인</span>
+      </span>
+    </Demo>
+  );
+}
+export function HoverEffect() {
+  return (
+    <Demo id="hover-effect" motion>
+      <span className="more-hover-card">상품{bars}</span>
+      <span className="more-pointer">↖</span>
+    </Demo>
+  );
+}
+export function ScrollReveal() {
+  return (
+    <Demo id="scroll-reveal" motion>
+      <small>↓ 내리기</small>
+      <span className="more-reveal-list">
+        <span>첫 글{bars}</span>
+        <span className="more-reveal-card">다음 글{bars}</span>
+      </span>
+    </Demo>
+  );
+}
+export function StaggerAnimation() {
+  return (
+    <Demo id="stagger-animation" motion>
+      <span className="more-stagger">
+        <span>커피</span>
+        <span>차</span>
+        <span>우유</span>
+      </span>
+    </Demo>
+  );
+}
+export function Transition() {
+  return (
+    <Demo id="transition" motion>
+      <b>보기 선택</b>
+      <span className="more-transition">주간</span>
+    </Demo>
+  );
+}
+export function Parallax() {
+  return (
+    <Demo id="parallax" motion>
+      <span className="more-far">
+        ☁ ☁
+        <br />산 산
+      </span>
+      <span className="more-near">
+        카페{bars}
+        <small>↓ 내리기</small>
+      </span>
+    </Demo>
+  );
+}
+export function ScrollSnap() {
+  return (
+    <Demo id="scroll-snap" motion>
+      <small>넘겨 놓기</small>
+      <span className="more-snap-window">
+        <span className="more-snap-track">
+          <span>사진 1</span>
+          <span>사진 2</span>
+          <span>사진 3</span>
+        </span>
+      </span>
+      <span className="more-snap-guide" />
+    </Demo>
+  );
+}
+export function MicroInteraction() {
+  return (
+    <Demo id="micro-interaction" motion>
+      <span className="more-heart">♥</span>
+      <span className="more-tap">↑ 누르기</span>
+    </Demo>
+  );
+}
+export function Glassmorphism() {
+  return (
+    <BeforeAfter id="glassmorphism">
+      <span className="more-glass-scene">
+        ☕<br />
+        카페
+      </span>
+      <span className="more-glass-pane">메뉴</span>
+    </BeforeAfter>
+  );
+}
+export function ReducedMotion() {
+  return (
+    <Phone id="reduced-motion">
+      <span className="preview-feature more-comparison">
+        <span className="more-before">
+          <small>움직임 켬</small>
+          <span className="more-sample more-motion-on">
+            <span>↗ ♥ ↘</span>
+            <span>커졌다</span>
+            <span>돌아옴</span>
+          </span>
+        </span>
+        <span className="more-after">
+          <small>줄임</small>
+          <span className="more-sample more-motion-off">
+            <span>♥</span>
+            <span>저장됨</span>
+          </span>
+        </span>
+      </span>
+    </Phone>
+  );
+}

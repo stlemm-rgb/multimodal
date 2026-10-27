@@ -3,7 +3,7 @@ import { categories, confusions, terms } from '../../src/glossary/data/terms';
 import { previews } from '../../src/glossary/previews';
 import { dictionaries } from '../../src/glossary/data/dictionaries';
 it('용어마다 고유한 ID, 분류, 설명, 미리보기가 있다', () => {
-  expect(terms).toHaveLength(56);
+  expect(terms).toHaveLength(70);
   for (const category of categories)
     expect(terms.filter((term) => term.category === category.id).length).toBeGreaterThan(0);
   const ids = terms.map((term) => term.id);
@@ -24,7 +24,7 @@ it('용어마다 고유한 ID, 분류, 설명, 미리보기가 있다', () => {
 it('헷갈리는 짝은 있는 용어 둘을 잇고 겹치지 않는다', () => {
   const ids = new Set(terms.map((term) => term.id));
   const pairs = confusions.map(({ a, b }) => [a, b].sort().join('|'));
-  expect(confusions).toHaveLength(13);
+  expect(confusions).toHaveLength(16);
   expect(new Set(pairs).size).toBe(confusions.length);
   for (const { a, b, difference } of confusions) {
     expect(ids.has(a) && ids.has(b) && a !== b).toBe(true);
@@ -37,7 +37,6 @@ it('사전마다 분류·용어·짝이 맞고, 예문 꼴을 지킨다', () => 
     'image',
     'video',
     'coding',
-    'pangyo',
   ]);
   for (const dictionary of dictionaries) {
     const categoryIds = dictionary.categories.map((category) => category.id);

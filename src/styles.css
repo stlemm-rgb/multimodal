@@ -905,6 +905,16 @@ summary {
   font-size: 0.8rem;
   word-break: keep-all;
 }
+.dictionary-tip {
+  margin-bottom: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-soft);
+  font-size: 0.85rem;
+}
+.dictionary-tip .muted {
+  margin-top: var(--space-1);
+}
 .dictionary-switch button + button {
   border-left: 1px solid var(--color-border);
 }

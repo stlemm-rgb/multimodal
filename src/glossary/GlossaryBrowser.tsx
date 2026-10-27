@@ -47,6 +47,12 @@ export default function GlossaryBrowser({
           </button>
         ))}
       </div>
+      {dictionary.tip && (
+        <div className="dictionary-tip">
+          <p>{dictionary.tip.title}</p>
+          <p className="muted">예: {dictionary.tip.example}</p>
+        </div>
+      )}
       <div className="glossary-tabs" role="tablist" aria-label="용어 분류">
         {categories.map(({ id: value, label }, index) => (
           <button
