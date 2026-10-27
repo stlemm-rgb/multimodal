@@ -209,8 +209,9 @@ test('AI는 기본 꺼짐이고 시트·설정·용어 사전을 외부 요청 �
   await expect(page.getByRole('switch', { name: 'AI 연결 켜기' })).not.toBeChecked();
   await page.getByRole('link', { name: '용어 사전', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'UI 용어 사전', exact: true })).toBeVisible();
-  await page.getByRole('tab', { name: '움직임이 있는 용어 (12)' }).click();
+  await page.getByRole('tab', { name: /^알림·기다림/u }).click();
   await expect(page.getByRole('button', { name: '스켈레톤 Skeleton', exact: true })).toBeVisible();
+  await page.getByRole('tab', { name: /^화면 부품/u }).click();
   await expect(
     page.getByRole('button', { name: '바텀시트 Bottom sheet', exact: true }),
   ).toBeVisible();
@@ -540,17 +541,25 @@ test('홈에서 두 항목을 연달아 체크하고 새로고침해도 진행�
   await expect(page).toHaveURL(/\/guide$/);
 });
 
-test('용어 24개를 그림과 움직임으로 나눠 보고 문구를 복사한다', async ({ page, context }) => {
+test('용어를 분류별로 보고 헷갈리는 말로 건너가며 문구를 복사한다', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/#/glossary');
-  await expect(page.getByRole('tab', { name: '그림으로 보는 용어 (12)' })).toHaveAttribute(
-    'aria-selected',
-    'true',
+  await expect(page.getByRole('tab')).toHaveCount(6);
+  const layoutTab = page.getByRole('tab', { name: /^화면 틀 \(\d+\)$/u });
+  await expect(layoutTab).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('.term-thumbnail')).toHaveCount(
+    Number((await layoutTab.textContent())!.match(/\d+/u)![0]),
   );
-  await expect(page.locator('.term-thumbnail')).toHaveCount(12);
   await expectNoOverflow(page);
-  await page.getByRole('tab', { name: '움직임이 있는 용어 (12)' }).click();
-  await expect(page.locator('.term-thumbnail')).toHaveCount(12);
+  await layoutTab.press('End');
+  await expect(page.getByRole('tab', { name: /^모양·꾸밈/u })).toBeFocused();
+  await page.getByRole('tab', { name: /^화면 부품/u }).click();
+  await page.getByRole('button', { name: '모달 창 Modal', exact: true }).click();
+  await page.getByRole('dialog').getByRole('button', { name: '바텀시트', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('화면 아래에서 올라와');
+  await expect(page.getByRole('dialog')).toContainText('모달은 화면 가운데에 뜨고');
+  await page.keyboard.press('Escape');
+  await page.getByRole('tab', { name: /^화면 틀/u }).click();
   await page.getByRole('button', { name: '서랍 메뉴 Drawer', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('화면 옆에서 밀려 나오는 메뉴예요.');
   await page.getByRole('button', { name: '문구 복사', exact: true }).click();
@@ -577,7 +586,8 @@ test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({
   await button.click();
   const canvasBefore = await page.getByRole('region', { name: '캡처 작업 공간' }).boundingBox();
   await expect(page.locator('.glossary-overlay')).toBeVisible();
-  await page.getByRole('button', { name: '빈 화면 안내 Empty state', exact: true }).focus();
+  await page.getByRole('tab', { name: /^화면 부품/u }).click();
+  await page.locator('.term-thumbnail').last().focus();
   await page.keyboard.press('Tab');
   await expect(page.getByRole('button', { name: '닫기', exact: true })).toBeFocused();
   await page.keyboard.press('Escape');
@@ -598,6 +608,7 @@ test('용어 패널의 문구를 고른 표시에 넣고 되돌린다', async ({
     })
     .toBe(page.viewportSize()!.width);
   await expectNoOverflow(page);
+  await page.getByRole('tab', { name: /^화면 부품/u }).click();
   await page.getByRole('button', { name: '카드 Card', exact: true }).click();
   await page.getByRole('button', { name: '1번 지시에 넣기' }).focus();
   await page.keyboard.press('Tab');

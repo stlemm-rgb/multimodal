@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { terms, type Term, type TermKind } from './data/terms';
+import { categories, confusions, terms, type Term, type TermCategory } from './data/terms';
 import { previews } from './previews';
 import BottomSheet from '../ui/BottomSheet';
 import { copyText } from '../platform/clipboard';
@@ -12,41 +12,46 @@ export default function GlossaryBrowser({
   selectedNumber?: number;
   onInsert?: (text: string) => void;
 }) {
-  const [kind, setKind] = useState<TermKind>('still');
+  const [category, setCategory] = useState<TermCategory>(categories[0].id);
   const [detail, setDetail] = useState<Term | null>(null);
   const [message, setMessage] = useState('');
   const id = useId();
   const Preview = detail ? previews[detail.id] : null;
+  const similar = detail
+    ? confusions.flatMap((pair) => {
+        const other = pair.a === detail.id ? pair.b : pair.b === detail.id ? pair.a : '';
+        const term = terms.find((entry) => entry.id === other);
+        return term ? [{ term, difference: pair.difference }] : [];
+      })
+    : [];
   return (
     <div className="glossary-browser">
-      <div className="glossary-tabs" role="tablist" aria-label="용어 종류">
-        {(['still', 'motion'] as const).map((value) => (
+      <div className="glossary-tabs" role="tablist" aria-label="용어 분류">
+        {categories.map(({ id: value, label }, index) => (
           <button
             key={value}
             id={`${id}-${value}`}
             role="tab"
-            aria-selected={kind === value}
+            aria-selected={category === value}
             aria-controls={`${id}-grid`}
-            tabIndex={kind === value ? 0 : -1}
+            tabIndex={category === value ? 0 : -1}
             onKeyDown={(event) => {
-              if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) {
-                event.preventDefault();
-                const next =
-                  event.key === 'Home'
-                    ? 'still'
-                    : event.key === 'End'
-                      ? 'motion'
-                      : kind === 'still'
-                        ? 'motion'
-                        : 'still';
-                setKind(next);
-                document.getElementById(`${id}-${next}`)?.focus();
-              }
+              const last = categories.length - 1;
+              const target = {
+                ArrowLeft: index === 0 ? last : index - 1,
+                ArrowRight: index === last ? 0 : index + 1,
+                Home: 0,
+                End: last,
+              }[event.key];
+              if (target === undefined) return;
+              event.preventDefault();
+              const next = categories[target].id;
+              setCategory(next);
+              document.getElementById(`${id}-${next}`)?.focus();
             }}
-            onClick={() => setKind(value)}
+            onClick={() => setCategory(value)}
           >
-            {value === 'still' ? '그림으로 보는 용어' : '움직임이 있는 용어'} (
-            {terms.filter((term) => term.kind === value).length})
+            {label} ({terms.filter((term) => term.category === value).length})
           </button>
         ))}
       </div>
@@ -54,10 +59,10 @@ export default function GlossaryBrowser({
         className="glossary-grid"
         id={`${id}-grid`}
         role="tabpanel"
-        aria-labelledby={`${id}-${kind}`}
+        aria-labelledby={`${id}-${category}`}
       >
         {terms
-          .filter((term) => term.kind === kind)
+          .filter((term) => term.category === category)
           .map((term) => {
             const Preview = previews[term.id];
             return (
@@ -85,6 +90,26 @@ export default function GlossaryBrowser({
             <h3>AI에게는 이렇게 말하세요</h3>
             <p>{detail.sayToAi}</p>
           </div>
+          {similar.length > 0 && (
+            <div className="term-similar">
+              <h3>헷갈리기 쉬운 말</h3>
+              <ul>
+                {similar.map(({ term, difference }) => (
+                  <li key={term.id}>
+                    <button
+                      onClick={() => {
+                        setDetail(term);
+                        setMessage('');
+                      }}
+                    >
+                      {term.name}
+                    </button>
+                    <p>{difference}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <button
             onClick={() => {
               void copyText(detail.sayToAi)
