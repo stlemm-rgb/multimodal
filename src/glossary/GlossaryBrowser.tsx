@@ -1,5 +1,6 @@
 import { useId, useState } from 'react';
-import { categories, confusions, terms, type Term, type TermCategory } from './data/terms';
+import { dictionaries } from './data/dictionaries';
+import type { DictionaryTerm } from './data/types';
 import { previews } from './previews';
 import BottomSheet from '../ui/BottomSheet';
 import { copyText } from '../platform/clipboard';
@@ -12,11 +13,17 @@ export default function GlossaryBrowser({
   selectedNumber?: number;
   onInsert?: (text: string) => void;
 }) {
-  const [category, setCategory] = useState<TermCategory>(categories[0].id);
-  const [detail, setDetail] = useState<Term | null>(null);
+  const [dictionaryId, setDictionaryId] = useState(dictionaries[0].id);
+  const dictionary = dictionaries.find((entry) => entry.id === dictionaryId) ?? dictionaries[0];
+  const { categories, confusions, terms } = dictionary;
+  const [category, setCategory] = useState(categories[0].id);
+  const [detail, setDetail] = useState<DictionaryTerm | null>(null);
   const [message, setMessage] = useState('');
   const id = useId();
-  const Preview = detail ? previews[detail.id] : null;
+  // 미리보기 그림은 UI 사전에만 있다.
+  const previewOf = (term: DictionaryTerm) =>
+    dictionary.id === 'ui' ? previews[term.id] : undefined;
+  const Preview = detail ? previewOf(detail) : undefined;
   const similar = detail
     ? confusions.flatMap((pair) => {
         const other = pair.a === detail.id ? pair.b : pair.b === detail.id ? pair.a : '';
@@ -26,6 +33,20 @@ export default function GlossaryBrowser({
     : [];
   return (
     <div className="glossary-browser">
+      <div className="dictionary-switch" role="group" aria-label="사전 종류">
+        {dictionaries.map((entry) => (
+          <button
+            key={entry.id}
+            aria-pressed={entry.id === dictionary.id}
+            onClick={() => {
+              setDictionaryId(entry.id);
+              setCategory(entry.categories[0].id);
+            }}
+          >
+            {entry.label}
+          </button>
+        ))}
+      </div>
       <div className="glossary-tabs" role="tablist" aria-label="용어 분류">
         {categories.map(({ id: value, label }, index) => (
           <button
@@ -64,17 +85,17 @@ export default function GlossaryBrowser({
         {terms
           .filter((term) => term.category === category)
           .map((term) => {
-            const Preview = previews[term.id];
+            const Preview = previewOf(term);
             return (
               <button
-                className="term-thumbnail"
+                className={`term-thumbnail ${Preview ? '' : 'term-text-only'}`}
                 key={term.id}
                 onClick={() => {
                   setDetail(term);
                   setMessage('');
                 }}
               >
-                <Preview />
+                {Preview && <Preview />}
                 <strong>{term.name}</strong>
                 <small>{term.english}</small>
               </button>
@@ -83,11 +104,15 @@ export default function GlossaryBrowser({
       </div>
       {detail && (
         <BottomSheet title={detail.name} onClose={() => setDetail(null)}>
-          <div className="term-detail-preview">{Preview && <Preview />}</div>
+          {Preview && (
+            <div className="term-detail-preview">
+              <Preview />
+            </div>
+          )}
           <p className="muted">{detail.english}</p>
           <p>{detail.meaning}</p>
           <div className="prompt-example">
-            <h3>AI에게는 이렇게 말하세요</h3>
+            <h3>{dictionary.exampleTitle}</h3>
             <p>{detail.sayToAi}</p>
           </div>
           {similar.length > 0 && (
@@ -119,7 +144,7 @@ export default function GlossaryBrowser({
           >
             문구 복사
           </button>
-          {selectedNumber !== undefined && onInsert && (
+          {dictionary.forAi && selectedNumber !== undefined && onInsert && (
             <button
               onClick={() => {
                 onInsert(detail.sayToAi);

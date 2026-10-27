@@ -1,3 +1,4 @@
+import type { Confusion } from './types';
 /** still은 정지 그림, motion은 움직이는 미리보기다. 분류와는 따로다. */
 export type TermKind = 'still' | 'motion';
 export type TermCategory = 'layout' | 'component' | 'input' | 'feedback' | 'motion' | 'style';
@@ -540,12 +541,6 @@ export const terms: readonly Term[] = [
   },
 ];
 
-/** 자주 헷갈리는 두 용어. 차이는 "A는 …하고, B는 …해요." 한 줄. */
-export interface Confusion {
-  a: string;
-  b: string;
-  difference: string;
-}
 export const confusions: readonly Confusion[] = [
   {
     a: 'modal',

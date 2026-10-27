@@ -208,7 +208,7 @@ test('AI는 기본 꺼짐이고 시트·설정·용어 사전을 외부 요청 �
   await page.getByRole('button', { name: '키 지우기' }).click();
   await expect(page.getByRole('switch', { name: 'AI 연결 켜기' })).not.toBeChecked();
   await page.getByRole('link', { name: '용어 사전', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'UI 용어 사전', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '용어 사전', exact: true })).toBeVisible();
   await page.getByRole('tab', { name: /^알림·기다림/u }).click();
   await expect(page.getByRole('button', { name: '스켈레톤 Skeleton', exact: true })).toBeVisible();
   await page.getByRole('tab', { name: /^화면 부품/u }).click();
@@ -559,6 +559,18 @@ test('용어를 분류별로 보고 헷갈리는 말로 건너가며 문구를 �
   await expect(page.getByRole('dialog')).toContainText('화면 아래에서 올라와');
   await expect(page.getByRole('dialog')).toContainText('모달은 화면 가운데에 뜨고');
   await page.keyboard.press('Escape');
+  // 다른 사전으로 바꾸면 그림 없이 글 카드로 보이고 예문 제목도 바뀐다.
+  const dictionarySwitch = page.getByRole('group', { name: '사전 종류' });
+  await dictionarySwitch.getByRole('button', { name: '판교 사투리', exact: true }).click();
+  await page.getByRole('button', { name: '얼라인 Align', exact: true }).click();
+  await expect(page.getByRole('dialog')).toContainText('쉬운 말로 바꾸면');
+  await page.keyboard.press('Escape');
+  await expectNoOverflow(page);
+  await dictionarySwitch.getByRole('button', { name: 'UI', exact: true }).click();
+  await expect(dictionarySwitch.getByRole('button', { name: 'UI', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
   await page.getByRole('tab', { name: /^화면 틀/u }).click();
   await page.getByRole('button', { name: '서랍 메뉴 Drawer', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('화면 옆에서 밀려 나오는 메뉴예요.');

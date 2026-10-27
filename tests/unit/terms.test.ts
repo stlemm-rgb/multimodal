@@ -1,6 +1,7 @@
 import { expect, it } from 'vitest';
 import { categories, confusions, terms } from '../../src/glossary/data/terms';
 import { previews } from '../../src/glossary/previews';
+import { dictionaries } from '../../src/glossary/data/dictionaries';
 it('용어마다 고유한 ID, 분류, 설명, 미리보기가 있다', () => {
   expect(terms).toHaveLength(56);
   for (const category of categories)
@@ -28,5 +29,30 @@ it('헷갈리는 짝은 있는 용어 둘을 잇고 겹치지 않는다', () => 
   for (const { a, b, difference } of confusions) {
     expect(ids.has(a) && ids.has(b) && a !== b).toBe(true);
     expect(difference.trim()).not.toBe('');
+  }
+});
+it('사전마다 분류·용어·짝이 맞고, 예문 꼴을 지킨다', () => {
+  expect(dictionaries.map((dictionary) => dictionary.id)).toEqual([
+    'ui',
+    'image',
+    'video',
+    'coding',
+    'pangyo',
+  ]);
+  for (const dictionary of dictionaries) {
+    const categoryIds = dictionary.categories.map((category) => category.id);
+    const ids = dictionary.terms.map((term) => term.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const category of categoryIds)
+      expect(dictionary.terms.some((term) => term.category === category)).toBe(true);
+    for (const term of dictionary.terms) {
+      expect(term.id).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u);
+      expect(categoryIds).toContain(term.category);
+      for (const value of Object.values(term)) expect(value.trim()).not.toBe('');
+      if (dictionary.forAi) expect(term.sayToAi).toContain(`(${term.english})`);
+      else expect(term.sayToAi).toContain('→');
+    }
+    for (const { a, b } of dictionary.confusions)
+      expect(ids.includes(a) && ids.includes(b) && a !== b).toBe(true);
   }
 });
