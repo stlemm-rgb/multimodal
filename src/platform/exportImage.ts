@@ -1,3 +1,4 @@
+import { badgeAnchor, badgeMoved, badgePoint } from '../core/annotations';
 import { labelLayout } from '../core/labelLayout';
 import { readShowLabels } from './labelSettings';
 import type { Capture } from '../core/project';
@@ -67,6 +68,21 @@ export async function exportImage(
         ctx.fill();
         ctx.stroke();
       }
+      if (badgeMoved(item)) {
+        const anchor = badgeAnchor(item);
+        const badge = badgePoint(item);
+        ctx.setLineDash([m.lineWidth * 2, m.lineWidth * 2]);
+        ctx.beginPath();
+        ctx.moveTo(anchor.x, anchor.y);
+        ctx.lineTo(badge.x, badge.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        if (item.type === 'pin') {
+          ctx.beginPath();
+          ctx.arc(anchor.x, anchor.y, m.lineWidth * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
       const label = showLabels ? labelLayout(item, capture.width, capture.height) : null;
       if (label) {
         ctx.beginPath();
@@ -84,7 +100,7 @@ export async function exportImage(
         );
         ctx.fillStyle = markColors.stroke;
       }
-      const point = item.type === 'arrow' ? item.start : item.position;
+      const point = badgePoint(item);
       ctx.beginPath();
       ctx.arc(point.x, point.y, m.radius, 0, Math.PI * 2);
       ctx.fill();

@@ -11,9 +11,13 @@ import type { Annotation, Point } from '../core/types';
 import type { ProjectStore } from '../core/storage';
 import {
   addAnnotation,
+  badgeMoved,
+  badgePoint,
   moveAnnotation,
+  moveBadge,
   nextNumber,
   removeAnnotation,
+  resetBadge,
   updateInstruction,
   updateNoteText,
 } from '../core/annotations';
@@ -35,7 +39,15 @@ type Gesture = {
   tool: string;
   base: Annotation[];
   moved: boolean;
+  /** 번호 동그라미를 눌렀다. */
+  badge: boolean;
+  /** 같은 번호를 두 번 눌렀다. */
+  double: boolean;
+  /** 번호만 옮긴다. */
+  badgeOnly: boolean;
 };
+/** 이 시간 안에 같은 번호를 다시 누르면 더블 클릭이다. */
+const DOUBLE_CLICK_MS = 350;
 export default function AnnotationCanvas({
   capture,
   store,
@@ -65,6 +77,11 @@ export default function AnnotationCanvas({
   const newlyAdded = useRef('');
   const textEditRecorded = useRef(false);
   const gesture = useRef<Gesture | null>(null);
+  // 더블 클릭한 번호는 다른 곳을 누를 때까지 번호만 옮긴다.
+  const [badgeMode, setBadgeMode] = useState('');
+  const lastBadgeClick = useRef({ id: '', time: 0 });
+  const sheetTimer = useRef(0);
+  useEffect(() => () => clearTimeout(sheetTimer.current), []);
   const metrics = markMetrics(capture.width, capture.height);
   const annotations = preview ?? history.present;
   const selectedItem = history.present.find((item) => item.id === selected);
@@ -144,7 +161,7 @@ export default function AnnotationCanvas({
   function badgeAt(p: Point) {
     return [...current.current.present].reverse().find((item) => {
       if (item.type === 'note') return false;
-      const c = item.type === 'arrow' ? item.start : item.position;
+      const c = badgePoint(item);
       return Math.hypot(p.x - c.x, p.y - c.y) <= metrics.radius;
     })?.id;
   }
@@ -153,6 +170,14 @@ export default function AnnotationCanvas({
     event.preventDefault();
     const start = point(event);
     const badge = badgeAt(start);
+    clearTimeout(sheetTimer.current);
+    const double =
+      Boolean(badge) &&
+      lastBadgeClick.current.id === badge &&
+      event.timeStamp - lastBadgeClick.current.time < DOUBLE_CLICK_MS;
+    lastBadgeClick.current = { id: '', time: 0 };
+    if (double) setBadgeMode(badge!);
+    else if (badge !== badgeMode) setBadgeMode('');
     const id =
       badge ??
       (tool === '선택'
@@ -169,6 +194,9 @@ export default function AnnotationCanvas({
       tool: badge ? '선택' : tool,
       base: current.current.present,
       moved: false,
+      badge: Boolean(badge),
+      double,
+      badgeOnly: Boolean(badge) && (double || badge === badgeMode),
     };
     event.currentTarget.setPointerCapture(event.pointerId);
   }
@@ -178,7 +206,14 @@ export default function AnnotationCanvas({
     const end = point(event);
     g.moved ||= Math.hypot(event.clientX - g.client.x, event.clientY - g.client.y) > 3;
     if (g.id && g.moved)
-      setPreview(moveAnnotation(g.base, g.id, end.x - g.start.x, end.y - g.start.y));
+      setPreview(
+        (g.badgeOnly ? moveBadge : moveAnnotation)(
+          g.base,
+          g.id,
+          end.x - g.start.x,
+          end.y - g.start.y,
+        ),
+      );
     else {
       const item = draft(g, end);
       if (item) setPreview([...g.base, item]);
@@ -192,8 +227,21 @@ export default function AnnotationCanvas({
     event.currentTarget.releasePointerCapture(event.pointerId);
     if (g.tool === '선택') {
       if (g.id && g.moved)
-        commit(moveAnnotation(g.base, g.id, end.x - g.start.x, end.y - g.start.y));
-      else if (g.id) setEditing(g.id);
+        commit(
+          (g.badgeOnly ? moveBadge : moveAnnotation)(
+            g.base,
+            g.id,
+            end.x - g.start.x,
+            end.y - g.start.y,
+          ),
+        );
+      else if (g.id && g.badge) {
+        // 더블 클릭일 수 있으니 지시문 창은 잠깐 기다렸다 연다.
+        const id = g.id;
+        if (!g.double) lastBadgeClick.current = { id, time: event.timeStamp };
+        if (!g.double)
+          sheetTimer.current = window.setTimeout(() => setEditing(id), DOUBLE_CLICK_MS);
+      } else if (g.id) setEditing(g.id);
       return;
     }
     const id = crypto.randomUUID();
@@ -255,6 +303,16 @@ export default function AnnotationCanvas({
           {annotations.map((item) => (
             <g key={item.id} data-annotation-id={item.id} data-annotation-type={item.type}>
               {item.id === selected && <Selection item={item} metrics={metrics} />}
+              {item.id === badgeMode && item.type !== 'note' && (
+                <circle
+                  className="mark-selection badge-mode"
+                  cx={badgePoint(item).x}
+                  cy={badgePoint(item).y}
+                  r={metrics.radius + metrics.lineWidth * 2}
+                  strokeWidth={metrics.lineWidth}
+                  strokeDasharray={`${metrics.lineWidth * 2} ${metrics.lineWidth * 2}`}
+                />
+              )}
               <Mark
                 item={item}
                 metrics={metrics}
@@ -323,6 +381,11 @@ export default function AnnotationCanvas({
             textEditRecorded.current = false;
             setEditing('');
           }}
+          onResetBadge={
+            edited.type !== 'note' && badgeMoved(edited)
+              ? () => commit(resetBadge(current.current.present, edited.id))
+              : undefined
+          }
           onDelete={() => {
             newlyAdded.current = '';
             textEditRecorded.current = false;
@@ -340,11 +403,13 @@ function AnnotationSheet({
   onTextChange,
   onClose,
   onDelete,
+  onResetBadge,
 }: {
   item: Annotation;
   onTextChange: (text: string) => void;
   onClose: () => void;
   onDelete: () => void;
+  onResetBadge?: () => void;
 }) {
   const [text, setText] = useState(item.type === 'note' ? item.text : item.instruction);
   const input = useRef<HTMLTextAreaElement>(null);
@@ -377,6 +442,7 @@ function AnnotationSheet({
         <button className="primary" onClick={onClose}>
           확인
         </button>
+        {onResetBadge && <button onClick={onResetBadge}>번호 제자리로</button>}
         <button onClick={onDelete}>지우기</button>
       </div>
     </BottomSheet>

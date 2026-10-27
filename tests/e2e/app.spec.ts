@@ -386,6 +386,37 @@ test('표시 추가·이동·실행 취소·저장 유지와 PNG·지시문 내�
   await expectNoOverflow(page);
 });
 
+test('번호를 더블 클릭하면 번호만 옮기고 점선으로 잇고 제자리로 돌린다', async ({ page }) => {
+  await newProject(page);
+  await addDrawingImage(page);
+  await draw(page, '박스', [0.4, 0.4], [0.7, 0.7]);
+  await describeMark(page, '여기를 작게');
+  const box = page.locator('[data-annotation-type="box"]');
+  const number = box.locator('text[font-weight="bold"]');
+  const svg = page.getByLabel('표시 그리기', { exact: true });
+  const bounds = (await svg.boundingBox())!;
+  const at = (x: number, y: number) =>
+    [bounds.x + bounds.width * x, bounds.y + bounds.height * y] as const;
+  await page.mouse.dblclick(...at(0.4, 0.4));
+  await expect(box.locator('.badge-mode')).toHaveCount(1);
+  await page.waitForTimeout(600);
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.mouse.move(...at(0.4, 0.4));
+  await page.mouse.down();
+  await page.mouse.move(...at(0.2, 0.2), { steps: 8 });
+  await page.mouse.up();
+  await expect.poll(async () => Number(await number.getAttribute('x'))).toBeCloseTo(160, 0);
+  expect(Number(await box.locator('rect[fill="none"]').getAttribute('x'))).toBeCloseTo(320, 0);
+  await expect(box.locator('.badge-leader line')).toHaveCount(1);
+  await page.mouse.click(...at(0.2, 0.2));
+  await page.getByRole('button', { name: '번호 제자리로', exact: true }).click();
+  await expect(box.locator('.badge-leader')).toHaveCount(0);
+  await expect.poll(async () => Number(await number.getAttribute('x'))).toBeCloseTo(320, 0);
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Control+z');
+  await expect(box.locator('.badge-leader line')).toHaveCount(1);
+});
+
 test('터치로 그리고 취소한 그리기는 버리며 입력 중인 글도 저장한다', async ({ page, context }) => {
   await newProject(page);
   await addDrawingImage(page);

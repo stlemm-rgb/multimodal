@@ -1,4 +1,4 @@
-import type { Annotation, ArrowAnnotation, BoxAnnotation } from './types';
+import type { Annotation, ArrowAnnotation, BoxAnnotation, Point } from './types';
 
 type LegacyAnnotation =
   | Annotation
@@ -87,4 +87,37 @@ export function moveAnnotation(
 }
 export function removeAnnotation(list: readonly Annotation[], id: string): Annotation[] {
   return normalizeAnnotations(list.filter((item) => item.id !== id));
+}
+type NumberedAnnotation = Exclude<Annotation, { type: 'note' }>;
+/** 번호의 원래 자리. */
+export function badgeAnchor(item: NumberedAnnotation): Point {
+  return item.type === 'arrow' ? item.start : item.position;
+}
+/** 번호 동그라미가 실제로 그려지는 자리. */
+export function badgePoint(item: NumberedAnnotation): Point {
+  const anchor = badgeAnchor(item);
+  return { x: anchor.x + (item.badgeOffset?.x ?? 0), y: anchor.y + (item.badgeOffset?.y ?? 0) };
+}
+export function badgeMoved(item: NumberedAnnotation): boolean {
+  return Boolean(item.badgeOffset && (item.badgeOffset.x || item.badgeOffset.y));
+}
+export function moveBadge(
+  list: readonly Annotation[],
+  id: string,
+  dx: number,
+  dy: number,
+): Annotation[] {
+  return list.map((item) =>
+    item.id === id && item.type !== 'note'
+      ? {
+          ...item,
+          badgeOffset: { x: (item.badgeOffset?.x ?? 0) + dx, y: (item.badgeOffset?.y ?? 0) + dy },
+        }
+      : item,
+  );
+}
+export function resetBadge(list: readonly Annotation[], id: string): Annotation[] {
+  return list.map((item) =>
+    item.id === id && item.type !== 'note' ? { ...item, badgeOffset: undefined } : item,
+  );
 }

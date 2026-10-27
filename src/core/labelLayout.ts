@@ -1,5 +1,6 @@
 import type { Annotation } from './types';
 import { markMetrics } from './markStyle';
+import { badgePoint } from './annotations';
 
 export function textUnits(text: string): number {
   return [...text].reduce(
@@ -52,9 +53,10 @@ export function labelLayout(item: Annotation, imageWidth: number, imageHeight: n
   let x: number;
   let y: number;
   if (item.type === 'pin') {
-    x = item.position.x + m.radius + m.padding;
-    if (x + width > imageWidth) x = item.position.x - m.radius - m.padding - width;
-    y = item.position.y - height / 2;
+    const p = badgePoint(item);
+    x = p.x + m.radius + m.padding;
+    if (x + width > imageWidth) x = p.x - m.radius - m.padding - width;
+    y = p.y - height / 2;
   } else if (item.type === 'box') {
     x = item.position.x;
     y = item.position.y - height - m.padding;

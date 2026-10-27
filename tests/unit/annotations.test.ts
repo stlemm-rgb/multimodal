@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   addAnnotation,
+  badgeMoved,
+  badgePoint,
   moveAnnotation,
+  moveBadge,
   nextNumber,
   normalizeAnnotations,
   removeAnnotation,
+  resetBadge,
   updateInstruction,
   updateNoteText,
 } from '../../src/core/annotations';
@@ -42,6 +46,20 @@ const list: readonly Annotation[] = Object.freeze([
   Object.freeze(note),
 ]);
 describe('표시', () => {
+  it('번호만 옮기면 원래 자리는 그대로이고, 표시를 옮기면 번호도 같이 가며, 제자리로 돌릴 수 있다', () => {
+    const moved = moveBadge(list, 'b', 5, -10);
+    const movedBox = moved[1] as typeof box;
+    expect(movedBox.position).toEqual(box.position);
+    expect(badgePoint(movedBox)).toEqual({ x: 35, y: 30 });
+    expect(badgeMoved(movedBox)).toBe(true);
+    expect(badgePoint(moveAnnotation(moved, 'b', 1, 1)[1] as typeof box)).toEqual({ x: 36, y: 31 });
+    expect(badgePoint(moveBadge(list, 'a', 2, 2)[2] as typeof arrow)).toEqual({ x: 3, y: 4 });
+    const reset = resetBadge(moved, 'b');
+    expect(reset[1]).toEqual(box);
+    expect(badgeMoved(reset[1] as typeof box)).toBe(false);
+    expect(normalizeAnnotations(moved)[1]).toMatchObject({ badgeOffset: { x: 5, y: -10 } });
+    expect(list[1]).not.toHaveProperty('badgeOffset');
+  });
   it('번호를 공유하고 메모는 번호를 쓰지 않으며 최대 번호 다음으로 추가한다', () => {
     expect(nextNumber([])).toBe(1);
     expect(nextNumber(list)).toBe(4);

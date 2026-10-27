@@ -1,3 +1,4 @@
+import { badgeAnchor, badgeMoved, badgePoint } from '../core/annotations';
 import { labelLayout } from '../core/labelLayout';
 import type { Annotation } from '../core/types';
 import { arrowHead, markColors, markFont, markMetrics, noteLayout } from '../core/markStyle';
@@ -38,7 +39,9 @@ export default function Mark({
     );
   }
   const label = showLabels ? labelLayout(item, width, height) : null;
-  const position = item.type === 'arrow' ? item.start : item.position;
+  const position = badgePoint(item);
+  const anchor = badgeAnchor(item);
+  const moved = badgeMoved(item);
   return (
     <g
       stroke={markColors.stroke}
@@ -65,6 +68,20 @@ export default function Mark({
             fill={markColors.stroke}
           />
         </>
+      )}
+      {moved && (
+        <g className="badge-leader">
+          <line
+            x1={anchor.x}
+            y1={anchor.y}
+            x2={position.x}
+            y2={position.y}
+            strokeDasharray={`${m.lineWidth * 2} ${m.lineWidth * 2}`}
+          />
+          {item.type === 'pin' && (
+            <circle cx={anchor.x} cy={anchor.y} r={m.lineWidth * 1.5} fill={markColors.stroke} />
+          )}
+        </g>
       )}
       {label && (
         <g

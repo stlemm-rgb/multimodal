@@ -11,6 +11,8 @@ interface AnnotationBase {
 interface Numbered {
   number: number;
   instruction: string;
+  /** 번호 동그라미만 옮긴 거리. 없으면 제자리(점의 위치·박스 왼쪽 위·화살표 시작). */
+  badgeOffset?: Point;
 }
 
 export interface PinAnnotation extends AnnotationBase, Numbered {
